@@ -1,4 +1,4 @@
-###LocationPlugin
+#LocationPlugin
 
 Location plugin allows you to get the geolocation of the user.
 
@@ -10,11 +10,11 @@ Location plugin allows you to get the geolocation of the user.
 * Link to the cobalt.loaction.js plugin script after the cobalt link in the HEAD or use the generated cobalt.plugins.js
 * use the cobalt.getLocation shortcut
 
-	//somewhere after cobalt inited
-	cobalt.getLocation(function(position){
-		//You received postion. It contains 'longitude' and 'latitude' as numbers.
-		cobalt.log('postion is :', postion)
-	})
+    //somewhere after cobalt inited
+    cobalt.getLocation(function(position){
+        //You received postion. It contains 'longitude' and 'latitude' as numbers.
+        cobalt.log('postion is :', postion)
+    })
 
 
 
