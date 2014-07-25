@@ -95,8 +95,9 @@ public final class LocationPlugin extends CobaltAbstractPlugin {
         Criteria criteria = new Criteria();
         String provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
-        Log.d(TAG, "location : "+location.toString());
-
+        
+        boolean catchAction = false;
+        
         try {
             String action = message.getString(Cobalt.kJSAction);
 
@@ -106,6 +107,8 @@ public final class LocationPlugin extends CobaltAbstractPlugin {
                     action.equals(GET_ALTITUDE) ||
                     action.equals(GET_ACCURACY)) {
 
+            	catchAction = true;
+            	
                 String callback = message.getString(Cobalt.kJSCallback);
                 JSONObject resultLocation = new JSONObject();
 
@@ -127,16 +130,20 @@ public final class LocationPlugin extends CobaltAbstractPlugin {
                     fragment.sendCallback(callback, resultLocation);
                 }
 
-                else if (location == null) {
+                else {
                     fragment.sendCallback(callback, null);
                     if (Cobalt.DEBUG) Log.d(TAG, "location is NULL");
                 }
 
-                else if (Cobalt.DEBUG) Log.d(TAG, "onMessage : " + message.toString());
+                if (!catchAction) 
+                	if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
             }
         }
         catch (JSONException exception) {
-            if (Cobalt.DEBUG) exception.printStackTrace();
+            if (Cobalt.DEBUG) {
+            	if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't find a good key in : " + message.toString());
+            	exception.printStackTrace();
+            }
         }
     }
 }
