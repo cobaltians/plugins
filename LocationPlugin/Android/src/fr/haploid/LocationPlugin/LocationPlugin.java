@@ -29,6 +29,10 @@
 
 package fr.haploid.LocationPlugin;
 
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.location.LocationListener;
+import android.os.Bundle;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
 import fr.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
@@ -47,7 +51,7 @@ import org.json.JSONObject;
 /**
  * @author Sébastien Famel
  */
-public final class LocationPlugin extends CobaltAbstractPlugin {
+public final class LocationPlugin extends CobaltAbstractPlugin{
 
     // TAG
     private static final String TAG = LocationPlugin.class.getSimpleName();
@@ -88,14 +92,10 @@ public final class LocationPlugin extends CobaltAbstractPlugin {
 
     @Override
     public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
-        Activity activity = webContainer.getActivity();
         CobaltFragment fragment = webContainer.getFragment();
 
-        LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        String provider = locationManager.getBestProvider(criteria, false);
-        Location location = locationManager.getLastKnownLocation(provider);
-        
+        Location location = getLocation(webContainer);
+
         boolean catchAction = false;
         
         try {
@@ -131,7 +131,6 @@ public final class LocationPlugin extends CobaltAbstractPlugin {
                 }
 
                 else {
-                    fragment.sendCallback(callback, null);
                     if (Cobalt.DEBUG) Log.d(TAG, "location is NULL");
                 }
 
@@ -145,5 +144,20 @@ public final class LocationPlugin extends CobaltAbstractPlugin {
             	exception.printStackTrace();
             }
         }
+    }
+
+    private Location getLocation(CobaltPluginWebContainer webContainer) {
+        Activity activity = webContainer.getActivity();
+
+        LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+
+        String provider = null;
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) provider = LocationManager.GPS_PROVIDER;
+
+        else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) provider = LocationManager.NETWORK_PROVIDER;
+
+        else Log.d(TAG, " ERROR - can't found LocationManager provider");
+
+        return locationManager.getLastKnownLocation(provider);
     }
 }
