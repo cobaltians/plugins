@@ -60,6 +60,10 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
      * MEMBERS
      **********************************************************/
 
+    private static final String LOCATION = "location";
+    private static final String ERROR = "error";
+    private static final String TEXT = "text";
+
     private static final String LONGITUDE = "longitude";
     private static final String LATITUDE = "latitude";
     private static final String ALTITUDE = "altitude";
@@ -131,6 +135,13 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
                 }
 
                 else {
+                    resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
+                    resultLocation.put(Cobalt.kJSPluginName, LOCATION);
+                    JSONObject data = new JSONObject();
+                    data.put(ERROR, true);
+                    data.put(TEXT, "location is NULL");
+                    resultLocation.put(Cobalt.kJSData, data);
+                    fragment.sendMessage(resultLocation);
                     if (Cobalt.DEBUG) Log.d(TAG, "location is NULL");
                 }
 
@@ -156,7 +167,7 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
 
         else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) provider = LocationManager.NETWORK_PROVIDER;
 
-        else Log.d(TAG, " ERROR - can't found LocationManager provider");
+        else if (Cobalt.DEBUG) Log.d(TAG, " ERROR - can't found LocationManager provider");
 
         return locationManager.getLastKnownLocation(provider);
     }
