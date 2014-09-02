@@ -63,6 +63,10 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
     private static final String LOCATION = "location";
     private static final String ERROR = "error";
     private static final String TEXT = "text";
+    private static final String CODE = "code";
+    private static final String DISABLED = "disabled";
+    private static final String NULL = "null";
+
 
     private static final String LONGITUDE = "longitude";
     private static final String LATITUDE = "latitude";
@@ -74,6 +78,8 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
     private static final String GET_LATITUDE = "getLatitude";
     private static final String GET_ALTITUDE = "getAltitude";
     private static final String GET_ACCURACY = "getAccuracy";
+
+    private boolean mFoundProvider = true;
 
     /**************************************************************************************
      * CONSTRUCTORS
@@ -139,10 +145,16 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
                     resultLocation.put(Cobalt.kJSPluginName, LOCATION);
                     JSONObject data = new JSONObject();
                     data.put(ERROR, true);
-                    data.put(TEXT, "location is NULL");
+                    if (mFoundProvider) {
+                        data.put(CODE, NULL);
+                        data.put(TEXT, "No location found");
+                    }
+                    else {
+                        data.put(CODE, DISABLED);
+                        data.put(TEXT, "Location detection has been disabled by user");
+                    }
                     resultLocation.put(Cobalt.kJSData, data);
                     fragment.sendMessage(resultLocation);
-                    if (Cobalt.DEBUG) Log.d(TAG, "location is NULL");
                 }
 
                 if (!catchAction) 
@@ -161,13 +173,15 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
         Activity activity = webContainer.getActivity();
 
         LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-
         String provider = null;
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) provider = LocationManager.GPS_PROVIDER;
 
         else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) provider = LocationManager.NETWORK_PROVIDER;
 
-        else if (Cobalt.DEBUG) Log.d(TAG, " ERROR - can't found LocationManager provider");
+        else {
+            mFoundProvider = false;
+            return null;
+        }
 
         return locationManager.getLastKnownLocation(provider);
     }
