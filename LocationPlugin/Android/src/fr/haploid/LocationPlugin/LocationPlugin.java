@@ -67,7 +67,6 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
     private static final String DISABLED = "disabled";
     private static final String NULL = "null";
 
-
     private static final String LONGITUDE = "longitude";
     private static final String LATITUDE = "latitude";
     private static final String ALTITUDE = "altitude";
@@ -118,32 +117,38 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
                     action.equals(GET_ACCURACY)) {
 
             	catchAction = true;
-            	
-                String callback = message.getString(Cobalt.kJSCallback);
+
+                // no callback cause call sendMessage now
+                //String callback = message.getString(Cobalt.kJSCallback);
                 JSONObject resultLocation = new JSONObject();
+                resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
+                resultLocation.put(Cobalt.kJSPluginName, LOCATION);
+                JSONObject data = new JSONObject();
 
                 if (location != null) {
+                    data.put(ERROR, false);
+                    JSONObject value = new JSONObject();
                     if (action.equals(GET_LOCATION) ||
                             action.equals(GET_LONGITUDE))
-                        resultLocation.put(LONGITUDE, location.getLongitude());
+                        value.put(LONGITUDE, location.getLongitude());
 
                     if (action.equals(GET_LOCATION) ||
                             action.equals(GET_LATITUDE))
-                        resultLocation.put(LATITUDE, location.getLatitude());
+                        value.put(LATITUDE, location.getLatitude());
 
                     if (action.equals(GET_ALTITUDE))
-                        resultLocation.put(ALTITUDE, location.getAltitude());
+                        value.put(ALTITUDE, location.getAltitude());
 
                     if (action.equals(GET_ACCURACY))
-                        resultLocation.put(ACCURACY, location.getAccuracy());
+                        value.put(ACCURACY, location.getAccuracy());
 
-                    fragment.sendCallback(callback, resultLocation);
+                    //resultLocation.put(CALLBACK, callback);
+                    data.put(Cobalt.kJSValue, value);
+                    resultLocation.put(Cobalt.kJSData, data);
+                    fragment.sendMessage(resultLocation);
                 }
 
                 else {
-                    resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
-                    resultLocation.put(Cobalt.kJSPluginName, LOCATION);
-                    JSONObject data = new JSONObject();
                     data.put(ERROR, true);
                     if (mFoundProvider) {
                         data.put(CODE, NULL);
@@ -182,6 +187,8 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
             mFoundProvider = false;
             return null;
         }
+        // requestSIngleUpdate available since API 9
+        //locationManager.requestSingleUpdate(provider, pendingIntent);
 
         return locationManager.getLastKnownLocation(provider);
     }
