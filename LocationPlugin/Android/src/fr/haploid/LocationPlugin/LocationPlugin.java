@@ -30,8 +30,10 @@
 package fr.haploid.LocationPlugin;
 
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.location.LocationListener;
+import android.os.Build;
 import android.os.Bundle;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
@@ -51,7 +53,7 @@ import org.json.JSONObject;
 /**
  * @author Sébastien Famel
  */
-public final class LocationPlugin extends CobaltAbstractPlugin{
+public final class LocationPlugin extends CobaltAbstractPlugin implements LocationListener {
 
     // TAG
     private static final String TAG = LocationPlugin.class.getSimpleName();
@@ -79,6 +81,16 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
     private static final String GET_ACCURACY = "getAccuracy";
 
     private boolean mFoundProvider = true;
+    private LocationManager mLocationManager;
+    private String mProvider;
+    private CobaltFragment mFragment;
+
+    private boolean getLocation = false;
+    private boolean getLongitude = false;
+    private boolean getLatitude = false;
+    private boolean getAltitude = false;
+    private boolean getAccuracy = false;
+
 
     /**************************************************************************************
      * CONSTRUCTORS
@@ -101,7 +113,7 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
 
     @Override
     public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
-        CobaltFragment fragment = webContainer.getFragment();
+        mFragment = webContainer.getFragment();
 
         Location location = getLocation(webContainer);
 
@@ -129,37 +141,49 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
                     data.put(ERROR, false);
                     JSONObject value = new JSONObject();
                     if (action.equals(GET_LOCATION) ||
-                            action.equals(GET_LONGITUDE))
+                            action.equals(GET_LONGITUDE)) {
+                        getLongitude = true;
+                        getLocation = true;
                         value.put(LONGITUDE, location.getLongitude());
+                    }
 
                     if (action.equals(GET_LOCATION) ||
-                            action.equals(GET_LATITUDE))
+                            action.equals(GET_LATITUDE)) {
+                        getLatitude = true;
+                        getLocation = true;
                         value.put(LATITUDE, location.getLatitude());
+                    }
 
-                    if (action.equals(GET_ALTITUDE))
+                    if (action.equals(GET_ALTITUDE)) {
                         value.put(ALTITUDE, location.getAltitude());
+                        getAltitude = true;
+                    }
 
-                    if (action.equals(GET_ACCURACY))
+                    if (action.equals(GET_ACCURACY)) {
                         value.put(ACCURACY, location.getAccuracy());
+                        getAccuracy = true;
+                    }
 
                     //resultLocation.put(CALLBACK, callback);
                     data.put(Cobalt.kJSValue, value);
                     resultLocation.put(Cobalt.kJSData, data);
-                    fragment.sendMessage(resultLocation);
+                    mFragment.sendMessage(resultLocation);
                 }
 
                 else {
                     data.put(ERROR, true);
                     if (mFoundProvider) {
                         data.put(CODE, NULL);
-                        data.put(TEXT, "No location found");
+                        data.put(TEXT, "No location found, please wait");
+                        Log.d(TAG, "call requestLocationUpdate");
+                        mLocationManager.requestLocationUpdates(mProvider,400, 1, this);
                     }
                     else {
                         data.put(CODE, DISABLED);
                         data.put(TEXT, "Location detection has been disabled by user");
                     }
                     resultLocation.put(Cobalt.kJSData, data);
-                    fragment.sendMessage(resultLocation);
+                    mFragment.sendMessage(resultLocation);
                 }
 
                 if (!catchAction) 
@@ -177,19 +201,65 @@ public final class LocationPlugin extends CobaltAbstractPlugin{
     private Location getLocation(CobaltPluginWebContainer webContainer) {
         Activity activity = webContainer.getActivity();
 
-        LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-        String provider = null;
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) provider = LocationManager.GPS_PROVIDER;
+        mLocationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) mProvider = LocationManager.GPS_PROVIDER;
 
-        else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) provider = LocationManager.NETWORK_PROVIDER;
+        else if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) mProvider = LocationManager.NETWORK_PROVIDER;
 
         else {
             mFoundProvider = false;
             return null;
         }
-        // requestSIngleUpdate available since API 9
-        //locationManager.requestSingleUpdate(provider, pendingIntent);
+        Location location = mLocationManager.getLastKnownLocation(mProvider);
 
-        return locationManager.getLastKnownLocation(provider);
+        return location;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged");
+        if (location != null) {
+            Log.d(TAG, "location values = "+location.getLongitude() + " / "+ location.getLatitude());
+            JSONObject resultLocation = new JSONObject();
+            try {
+                resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
+                resultLocation.put(Cobalt.kJSPluginName, LOCATION);
+                JSONObject data = new JSONObject();
+                data.put(ERROR, false);
+                JSONObject value = new JSONObject();
+                if (getLocation || getLongitude)
+                    value.put(LONGITUDE, location.getLongitude());
+                if (getLocation || getLatitude)
+                    value.put(LATITUDE, location.getLatitude());
+                if (getAltitude)
+                    value.put(ALTITUDE, location.getAltitude());
+                if (getAccuracy)
+                    value.put(ALTITUDE, location.getAccuracy());
+
+                data.put(Cobalt.kJSValue, value);
+                resultLocation.put(Cobalt.kJSData, data);
+                Log.d(TAG, "send new position to web with location = "+resultLocation.toString());
+
+                mFragment.sendMessage(resultLocation);
+                mLocationManager.removeUpdates(this);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 }
