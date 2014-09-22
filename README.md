@@ -25,7 +25,14 @@ how to create a plugin
 
 Planned by team plugins
 =======
-
+* Add cross-WebView notification plugin,
+* Add photo picker plugin (from camera & gallery),
+* Add slideshow plugin,
+* Add video player plugin,
+* Add Android "up" navigation style,
+* Add side menu plugin,
+* Add fullscreen image with zoom plugin,
+* Add device informations plugin.
 
 
 
