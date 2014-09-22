@@ -9,7 +9,7 @@ Stable plugin list
 
 | Plugin           | iOs  | Android | BlackBerry10 | Tizen |
 | -------------------- | ---- | ------- | ------------ | ----- |
-| Location        | full | full | none | none |
+| [Location](https://github.com/cobaltians/plugins/tree/master/LocationPlugin)        | full | full | none | none |
 
 
 
