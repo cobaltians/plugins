@@ -23,17 +23,4 @@ Repository for all Cobalt plugins. Submit yours!
 * Add side menu plugin,
 * Add fullscreen image with zoom plugin,
 * Add device informations plugin.
-
-# Team draft features
-
-We built a set of features we will release as plugins or merge into the core quite soon.
-
-| Feature              | iOs  | Android | BlackBerry10 | Tizen |
-| -------------------- | ---- | ------- | ------------ | ----- |
-| playVideo        | full | full | full | full |
-| getGeoloc            | full | full | full | full |
-| getDeviceInfo        | no | no | partial | partial |
-| photoPicker (file or library)   | full | full | no | no |
-| multiple photoPicker (from library)   | full | full | no | no |
-| actionPicker (alert wth only buttons)    | full | full | no | no |
-
+* Add actionPicker
