@@ -3,6 +3,18 @@ plugins
 
 A repository for all Cobalt plugins. Submit yours !
 
+
+Stable plugin list 
+========
+
+| Plugin           | iOs  | Android | BlackBerry10 | Tizen |
+| -------------------- | ---- | ------- | ------------ | ----- |
+| Location        | full | full | none | none |
+
+
+
+
+
 how to create a plugin
 =======
 
