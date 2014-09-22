@@ -8,14 +8,14 @@ How to use
 ----------
 
 * import the plugin to your project as explained [here](https://github.com/cobaltians/cobalt/wiki/Using-plugins)
-* Add the cobalt.loaction.js to your web JS folder
+* Add the cobalt.location.js to your web JS folder
 * Add an html link to the cobalt.location.js plugin script after the cobalt link in the HEAD tag
 
 use the cobalt.getLocation shortcut like this
 
     //somewhere after cobalt inited
     cobalt.getLocation(function(position){
-        //You received postion. It contains 'longitude' and 'latitude' as numbers.
+        //You received position. It contains 'longitude' and 'latitude' as numbers.
         cobalt.log('postion is :', position)
     });
 
