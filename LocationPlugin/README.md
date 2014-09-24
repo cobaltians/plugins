@@ -7,24 +7,41 @@ Location plugin allows you to get the geolocation of the user.
 How to use
 ----------
 
-
-Run the script that will certainly be done in a few days...
-
-Link to the cobalt.loaction.js plugin script after the cobalt link in the HEAD or use the generated cobalt.plugins.js
+* import the plugin to your project as explained [here](https://github.com/cobaltians/cobalt/wiki/Using-plugins)
+* Add the cobalt.location.js to your web JS folder
+* Add an html link to the cobalt.location.js plugin script after the cobalt link in the HEAD tag
 
 use the cobalt.getLocation shortcut like this
 
     //somewhere after cobalt inited
     cobalt.getLocation(function(position){
-        //You received postion. It contains 'longitude' and 'latitude' as numbers.
+        //You received position. It contains 'longitude' and 'latitude' as numbers.
         cobalt.log('postion is :', position)
     });
+
+
+You can handle error messages like this :
+
+    cobalt.init({
+        plugins:{
+            location:{
+                onError:function(code, text){
+                    //handle errors
+                }
+            }
+        }
+    });
+    
+Known error codes and texts are :
+
+* DISABLED : Location detection has been disabled by user
+* NULL : No location found
+
 
 
 Planned features
 ----------------
 
 Next features are:
- * error/user-should-enable-location callback and errors
  * registering and unregistering to location changes
  * ...
