@@ -44,7 +44,7 @@ How to use
 			params : { apiKey : "3455345dd" }
 		},
 		defaultParameters:{
-			type : "POST"
+			type : "POST",
 			errorCallback : function( callId, methodName, parameters ){
 				cobalt.log('WS ERROR', callId, methodName);
 			}
@@ -95,7 +95,9 @@ When WS server answers, native sends this to web
 	{ type : "plugin", name : "webservices", action : "onWSResult", data : {
 		callId : 2312,
 		data : {} // the data that was given by the server
+		text : "" // the server response as text if JSON parse of the response failed
 	}}
+	
 	
 If error occurs, native sends this to web
 	
