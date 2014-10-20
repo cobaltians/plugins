@@ -15,31 +15,28 @@ How to use
 
 ### Usage on the web side
 
-cobalt.ws.config({
-	base : {
-		url : "", 
-		params : {}
-	},
-	defaultParameters:{
-		type : "GET", //default to GET
+	cobalt.ws.config({
+		base : {
+			url : "", 
+			params : {}
+		},
+		defaultParameters:{
+			type : "GET", //default to GET
+			errorCallback : function( callId, methodName, parameters ){}
+		}
+	});
+	
+	cobalt.ws.call({
+		url : "", //added to base.url if defined
+		params :{},
+		storageKey : "", //result will be saved at this key into storage
+		successCallback : function( data ){} //called at WS call end. 
+		cacheCallback : function( data ){}   //called if something into storageKey
 		errorCallback : function( callId, methodName, parameters ){}
-	}
-	
-})
-
-cobalt.ws.call({
-	url : "", //added to base.url if defined
-	params :{},
-	storageKey : "", //result will be saved at this key into storage
-	successCallback : function( data ){} //called at WS call end. 
-	cacheCallback : function( data ){}   //called if something into storageKey
-	errorCallback : function( callId, methodName, parameters ){}
-	
-});
+	});
 
 
-
-### Full usage example :
+### Example :
 
 	cobalt.ws.config({
 		base : {
@@ -79,7 +76,7 @@ cobalt.ws.call({
 	
 ### How it works
 
-When cobalt.ws.call is called on JS side, JS sends this to native :
+When **cobalt.ws.call** is called on JS side, JS sends this to native :
 	
 	{ type : "plugin", name : "webservices", action : "call", data : {
 		url : ""
