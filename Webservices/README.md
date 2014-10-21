@@ -103,12 +103,14 @@ If error occurs, native sends this to web
 	
 	{ type : "plugin", name : "webservices", action : "onWSError", data : {
 		callId : 2312,
-		data : {} // the data that was given by the server
+		data : {} // the data that was given by the server,
+		text : "" // the server response as text if JSON parse of the response failed
 	}}
 
 If already something in storageKey and saveToStorage = true, native call this on web
 	
 	{ type : "plugin", name : "webservices", action : "onStorageResult", data : {
 		callId : 2312,
-		data : {} // the data that was in storageKey
+		data : {} // the data that was in storageKey,
+		text : "" // the text that was in storageKey if not JSON
 	}}
