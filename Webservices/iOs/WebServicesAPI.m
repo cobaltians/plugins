@@ -57,21 +57,69 @@ static WebServicesAPI *sharedApi = nil;
 	return self;
 }
 
-- (void)doWebServicesRequestWithData: (NSDictionary *)data andViewController: (CobaltViewController *)viewController {
+- (void)doWebServicesRequestWithData: (NSDictionary *)data andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId{
     __unsafe_unretained WebServicesAPI * wsAPI = self;
     [queue addOperationWithBlock:^{
         @autoreleasepool {
             NSString * url = [data objectForKey: @"url"];
             NSString * type = [data objectForKey: @"type"];
             NSDictionary * params = [data objectForKey: @"params"];
-            
-            NSMutableString * requestURL = [NSMutableString stringWithString: url];
-            [requestURL appendString: @"?"];
-            for(NSString * key in [params allKeys]) {
-                [requestURL appendFormat: @"%@=%@&", key, [params objectForKey: key]];
+            NSNumber * saveToStorage = [data objectForKey: @"saveToStorage"];
+            NSString * storageKey = [data objectForKey: @"storageKey"];
+
+            if(storageKey) {
+                id storedValue = nil;
+                
+                if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)])
+                {
+                    id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                    storedValue = [p storedValueForKey: storageKey];
+                } else {
+                    storedValue = [wsAPI storedValueForKey: storageKey];
+                }
+                
+                NSDictionary * storedDataToSend = nil;
+                
+                if([storedValue isKindOfClass: [NSDictionary class]]) {
+                    storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
+                                                 @"callId" : callId,
+                                                 @"data" : storedValue
+                                                 }};
+                } else if([storedValue isKindOfClass: [NSString class]]) {
+                    storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
+                                                  @"callId" : callId,
+                                                  @"text" : storedValue
+                                                  }};
+                }
+                
+                if(storedDataToSend) {
+                    [viewController sendMessage: storedDataToSend];
+                }
             }
             
-            NSURLRequest * request = [NSURLRequest requestWithURL: [NSURL URLWithString: requestURL]];
+            NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+            
+            NSMutableString * requestURL = [NSMutableString stringWithString: url];
+            
+            if([type isEqualToString: @"GET"]) {
+                [requestURL appendString: @"?"];
+                for(NSString * key in [params allKeys]) {
+                    [requestURL appendFormat: @"%@=%@&", key, [params objectForKey: key]];
+                }
+            } else if([type isEqualToString: @"POST"]) {
+                [request setHTTPMethod:@"POST"];
+                NSMutableString * postString = [NSMutableString stringWithString: @""];
+                for(NSString * key in [params allKeys]) {
+                    [postString appendFormat: @"%@=%@&", key, [params objectForKey: key]];
+                }
+                
+                NSData *postData = [postString dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
+                [request setHTTPBody: postData];
+            } else {
+                return;
+            }
+            
+            [request setURL: [NSURL URLWithString: requestURL]];
             
             if (DEBUGAPI) NSLog(@"%@", request);
             
@@ -97,22 +145,49 @@ static WebServicesAPI *sharedApi = nil;
                 if(data) {
                     [[NSThread mainThread] performBlock:^{
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
-                            @"callId" : @0,
-                            @"data" : data,
-                            @"text" : @""
+                            @"callId" : callId,
+                            @"data" : data
                             }};
+                        
+                        [viewController sendMessage: dataToSendToWeb];
+                    } waitUntilDone:NO];
+                } else {
+                    [[NSThread mainThread] performBlock:^{
+                        NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
+                                                                    @"callId" : callId,
+                                                                    @"text" : responseString
+                                                                    }};
                         
                         [viewController sendMessage: dataToSendToWeb];
                     } waitUntilDone:NO];
                 }
                 
                 [[NSThread mainThread] performBlock:^{
+                    if(saveToStorage) {
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)])
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                            [p storeValue: data forKey: storageKey];
+                        } else {
+                            [wsAPI storeValue: data forKey: storageKey];
+                        }
+                    }
+                } waitUntilDone: NO];
+                
+                /*[[NSThread mainThread] performBlock:^{
                     [[NSNotificationCenter defaultCenter] postNotificationName: @"lol" object: nil userInfo: nil];
-                } waitUntilDone:NO];
+                } waitUntilDone:NO];*/
                 
             }
             else {
-                [wsAPI performSelectorOnMainThread:@selector(processError:) withObject:errorHttp waitUntilDone:YES];
+                [[NSThread mainThread] performBlock:^{
+                    NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSError", @"data" : @{
+                                                                @"callId" : callId,
+                                                                @"text" : responseString
+                                                                }};
+                    
+                    [viewController sendMessage: dataToSendToWeb];
+                } waitUntilDone:NO];
             }
         }
 	}];
@@ -140,47 +215,21 @@ static WebServicesAPI *sharedApi = nil;
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-#pragma mark ERROR MANAGEMENT
-#pragma mark -
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//****************
-// PROCESS ERROR *
-//****************
-/*!
- @method		- (void)processError:(NSError *)error
- @abstract		Processes any error that might occur when calling web services.
- @param         error   An NSError object that encapsulates richer and more extensible error information.
- @discussion    You might consider using [error.userInfo objectForKey:kErrorNotificationKey]
- to retrieve the web service that raised the error and deal with it accordingly.
- */
 
-/*
-- (void)processError:(NSError *)error {
-    if (!displayingAlertView) {
-		UIAlertView *alertView = nil;
-		switch (error.code) {
-            case 500:
-				alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil) message:([error.userInfo objectForKey:kErrorMessageKey] != nil ? [error.userInfo objectForKey:kErrorMessageKey] : NSLocalizedString(@"Unknown error.", nil)) delegate:self cancelButtonTitle:NSLocalizedString(@"OK", nil) otherButtonTitles:nil];
-				break;
-			case 501:
-				alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil) message:NSLocalizedString(@"Error while deserializing JSON object.", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"OK", nil) otherButtonTitles:nil];
-				break;
-		}
-        if ([error.domain isEqualToString:@"NSURLErrorDomain"]) {
-            // Check reachability for internet connection
-            Reachability *reachability = [Reachability reachabilityForInternetConnection];
-            NetworkStatus status = [reachability currentReachabilityStatus];
-            if (status == NotReachable) alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Vous n'êtes pas connecté", nil) message:NSLocalizedString(@"Cette opération nécessite une connexion internet", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"OK", nil) otherButtonTitles:nil];
-        }
-		if (alertView != nil) {
-			[alertView show];
-			displayingAlertView = YES;
-		}
-	}
+//////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark WEBSERVICESSTORAGEDELEGATE
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+- (id) storedValueForKey: (NSString *) key {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    return [defaults objectForKey: key];
 }
-*/
+
+- (void)storeValue: (id)value forKey: (NSString *)key {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject: value forKey: key];
+    [defaults synchronize];
+}
 
 @end
 

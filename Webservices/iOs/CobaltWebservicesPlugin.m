@@ -13,6 +13,7 @@
 - (id)init{
     if (self = [super init]) {
         //
+        self.callId = @0;
     }
     return self;
 }
@@ -20,7 +21,14 @@
 - (void)onMessageFromCobaltController:(CobaltViewController *)viewController andData: (NSDictionary *)data {
     _viewController = viewController;
     
-    [[WebServicesAPI sharedInstance] doWebServicesRequestWithData: [data objectForKey: @"data"] andViewController: viewController];
+     NSString * callback = [data objectForKey:kJSCallback];
+    
+    @synchronized(self.callId) {
+        self.callId = @([self.callId intValue] + 1);
+        [_viewController sendCallback: callback withData: @{ @"callId": self.callId}];
+    
+        [[WebServicesAPI sharedInstance] doWebServicesRequestWithData: [data objectForKey: @"data"] andViewController: viewController andCallId: self.callId];
+    }
 }
 
 

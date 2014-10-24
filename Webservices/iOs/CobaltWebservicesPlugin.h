@@ -14,4 +14,6 @@
     CobaltViewController * _viewController;
 }
 
+@property NSNumber * callId;
+
 @end
