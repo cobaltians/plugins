@@ -78,23 +78,35 @@ static WebServicesAPI *sharedApi = nil;
                     storedValue = [wsAPI storedValueForKey: storageKey];
                 }
                 
-                NSDictionary * storedDataToSend = nil;
-                
-                if([storedValue isKindOfClass: [NSDictionary class]]) {
-                    storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
-                                                 @"callId" : callId,
-                                                 @"data" : storedValue
-                                                 }};
-                } else if([storedValue isKindOfClass: [NSString class]]) {
-                    storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
-                                                  @"callId" : callId,
-                                                  @"text" : storedValue
-                                                  }};
+                if(storedValue) {
+                    NSDictionary * storedDataToSend = nil;
+                    
+                    NSError * error;
+                    NSData *data = [storedValue dataUsingEncoding:NSUTF8StringEncoding];
+                    NSDictionary * storedJSONValue = [NSJSONSerialization JSONObjectWithData:data
+                                                                                     options:kNilOptions
+                                                                                       error:&error];
+                    
+                    if(data) {
+                        storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
+                                                      @"callId" : callId,
+                                                      @"data" : storedJSONValue
+                                                      }};
+                    } else if(storedValue) {
+                        storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
+                                                      @"callId" : callId,
+                                                      @"text" : storedValue
+                                                      }};
+                    }
+                    
+                    if(storedDataToSend) {
+                        [viewController sendMessage: storedDataToSend];
+                    }
                 }
-                
-                if(storedDataToSend) {
-                    [viewController sendMessage: storedDataToSend];
-                }
+            }
+            
+            if(url.length == 0) {
+                return;
             }
             
             NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
@@ -163,13 +175,13 @@ static WebServicesAPI *sharedApi = nil;
                 }
                 
                 [[NSThread mainThread] performBlock:^{
-                    if(saveToStorage) {
+                    if(saveToStorage && storageKey) {
                         if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)])
                         {
                             id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
-                            [p storeValue: data forKey: storageKey];
+                            [p storeValue: responseString forKey: storageKey];
                         } else {
-                            [wsAPI storeValue: data forKey: storageKey];
+                            [wsAPI storeValue: responseString forKey: storageKey];
                         }
                     }
                 } waitUntilDone: NO];
