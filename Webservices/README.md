@@ -55,17 +55,17 @@ How to use
 		url : "getUser",
 		userId: 42,
 		storageKey : "user:412",
-		cacheCallback : function( data ){
+		cacheCallback : function( data, relatedCall ){
 			cobalt.log('latest user data was', data.user )	
 		},
-		successCallback : function( data ){
+		successCallback : function( data, relatedCall ){
 			cobalt.log('server user data is', data.user )
 		}
 	})
 	
 	cobalt.ws.call({
 		storageKey : "user:412",
-		cacheCallback : function( data ){
+		cacheCallback : function( data, relatedCall ){
 			if (data){
 				cobalt.log('latest user data was', data.user )	
 			}
@@ -82,6 +82,7 @@ When **cobalt.ws.call** is called on JS side, JS sends this to native :
 		params : {},
 		type : "GET",
 		saveToStorage : true/false,
+		sendCacheResult : true/false,
 		storageKey : "", //optionnal
 		filterData : {} //optionnal
 	}, callback : 412 }
@@ -98,7 +99,7 @@ When WS server answers, native sends this to web
 		text : "" // the server response as text if JSON parse of the response failed
 	}}
 	
-	
+
 If error occurs, native sends this to web
 	
 	{ type : "plugin", name : "webservices", action : "onWSError", data : {
@@ -107,7 +108,8 @@ If error occurs, native sends this to web
 		text : "" // the server response as text if JSON parse of the response failed
 	}}
 
-If already something in storageKey and saveToStorage = true, native sends this to the web
+If saveToStorage was true, native store the result with the storageKey
+If already something in storageKey and sendCacheResult was true, native sends this to the web
 	
 	{ type : "plugin", name : "webservices", action : "onStorageResult", data : {
 		callId : 2312,
@@ -122,12 +124,23 @@ User can also get the result form cache without calling server again like this :
 
 	cobalt.ws.call({
 		storageKey : "user:412",
-		cacheCallback : function( data ){
+		cacheCallback : function( data, relatedCall ){
 			cobalt.log('latest user data was', data.user )	
+		},
+		cacheError : function( err, relatedCall  ){
+			cobalt.log('error retrieving user ', err )	
 		}
 	})
 
-In this case, native side sends a "onStorageResult" message (see above) with the data in storageKey. It sends "onStorageResult" with an empty data if nothing is available in the store or if storageKey is unknown.
+In this case, native side sends a "onStorageResult" message (see above) with the data in storageKey. 
+
+If something went wrong and sendCacheResult was true, native sends this to the web :
+
+	{ type : "plugin", name : "webservices", action : "onStorageError", data : {
+		callId : 2312,
+		text : "" // the error detail as string
+	}}
+
 
 **filterData** :
 
