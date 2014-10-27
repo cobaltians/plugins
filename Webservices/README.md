@@ -138,7 +138,7 @@ If something went wrong and sendCacheResult was true, native sends this to the w
 
 	{ type : "plugin", name : "webservices", action : "onStorageError", data : {
 		callId : 2312,
-		text : "" // the error detail as string
+		text : "" // the error detail as string, for example : "EMPTY", "NOT_FOUND" or "UNKNOWN_ERROR"
 	}}
 
 
