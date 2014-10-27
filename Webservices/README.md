@@ -158,7 +158,7 @@ These two methos on the native side are overridable to change the way data is st
 * storeValue takes the storageKey and the data and should store the data somewhere
 * storedValueForKey takes the storageKey string as parameter and returns the data from somewhere
 
-si les data ou storageKey est nul, ces fonctions ne seront pas appelées
+if data or storageKey is null, those functions are not called by the Cobalt plugin
 
 
 
