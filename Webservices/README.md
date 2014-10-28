@@ -142,7 +142,7 @@ If something went wrong and sendCacheResult was true, native sends this to the w
 	}}
 
 
-**filterData** :
+**processData** :
 
 This parameter can be used to treat the data received from cache or the server before sending it back to the web.
 It can be usefull to filtering, sorting, or doing anything with the data before sending it back to the web.
