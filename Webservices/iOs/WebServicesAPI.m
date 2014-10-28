@@ -65,9 +65,10 @@ static WebServicesAPI *sharedApi = nil;
             NSString * type = [data objectForKey: @"type"];
             NSDictionary * params = [data objectForKey: @"params"];
             NSNumber * saveToStorage = [data objectForKey: @"saveToStorage"];
+            NSNumber * sendCacheResult = [data objectForKey: @"sendCacheResult"];
             NSString * storageKey = [data objectForKey: @"storageKey"];
 
-            if(storageKey) {
+            if([sendCacheResult boolValue]) {
                 id storedValue = nil;
                 
                 if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)])
@@ -97,11 +98,23 @@ static WebServicesAPI *sharedApi = nil;
                                                       @"callId" : callId,
                                                       @"text" : storedValue
                                                       }};
+                    } else {
+                        NSDictionary * noStoredDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageError", @"data" : @{
+                                                                       @"callId" : callId,
+                                                                       @"text" : @"UNKNOWN_ERROR",
+                                                                       }};
+                        [viewController sendMessage: noStoredDataToSend];
                     }
                     
                     if(storedDataToSend) {
                         [viewController sendMessage: storedDataToSend];
                     }
+                } else {
+                    NSDictionary * noStoredDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageError", @"data" : @{
+                                                  @"callId" : callId,
+                                                  @"text" : @"NOT_FOUND",
+                                                  }};
+                    [viewController sendMessage: noStoredDataToSend];
                 }
             }
             
