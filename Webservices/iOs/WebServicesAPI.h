@@ -10,8 +10,12 @@
 
 @protocol WebServicesStorageDelegate <NSObject>
 
+@optional
+
 - (id) storedValueForKey: (NSString *) key;
 - (void)storeValue: (id)value forKey: (NSString *)key;
+
+- (id)processData: (id)data withParameters: (NSDictionary *)parameters;
 
 @end
 

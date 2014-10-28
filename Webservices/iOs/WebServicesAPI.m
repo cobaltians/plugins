@@ -67,11 +67,12 @@ static WebServicesAPI *sharedApi = nil;
             NSNumber * saveToStorage = [data objectForKey: @"saveToStorage"];
             NSNumber * sendCacheResult = [data objectForKey: @"sendCacheResult"];
             NSString * storageKey = [data objectForKey: @"storageKey"];
+            NSDictionary * processData = [data objectForKey: @"processData"];
 
             if([sendCacheResult boolValue]) {
                 id storedValue = nil;
                 
-                if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)])
+                if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(storedValueForKey:)])
                 {
                     id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
                     storedValue = [p storedValueForKey: storageKey];
@@ -89,11 +90,23 @@ static WebServicesAPI *sharedApi = nil;
                                                                                        error:&error];
                     
                     if(data) {
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(processData:withParameters:)] && processData)
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                            storedJSONValue = [p processData: storedJSONValue withParameters: processData];
+                        }
+                        
                         storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
                                                       @"callId" : callId,
                                                       @"data" : storedJSONValue
                                                       }};
                     } else if(storedValue) {
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(processData:withParameters:)] && processData)
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                            storedValue = [p processData: storedValue withParameters: processData];
+                        }
+                        
                         storedDataToSend = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onStorageResult", @"data" : @{
                                                       @"callId" : callId,
                                                       @"text" : storedValue
@@ -157,7 +170,7 @@ static WebServicesAPI *sharedApi = nil;
             wsAPI.nbRequete--;
             [wsAPI checkNetworkActivity];
             
-            NSString *responseString = [[NSString alloc] initWithData: requestData encoding:NSUTF8StringEncoding];
+            __block NSString *responseString = [[NSString alloc] initWithData: requestData encoding:NSUTF8StringEncoding];
             
             if (DEBUGAPI) NSLog(@"%@", responseString);
             
@@ -165,10 +178,16 @@ static WebServicesAPI *sharedApi = nil;
                 
                 NSError *error;
                 
-                NSDictionary *data = [NSJSONSerialization JSONObjectWithData: requestData options:kNilOptions error:&error];
+                __block NSDictionary *data = [NSJSONSerialization JSONObjectWithData: requestData options:kNilOptions error:&error];
                 
                 if(data) {
                     [[NSThread mainThread] performBlock:^{
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(processData:withParameters:)] && processData)
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                                data = [p processData: data withParameters: processData];
+                        }
+                        
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
                             @"callId" : callId,
                             @"data" : data
@@ -178,6 +197,13 @@ static WebServicesAPI *sharedApi = nil;
                     } waitUntilDone:NO];
                 } else {
                     [[NSThread mainThread] performBlock:^{
+                        
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(processData:withParameters:)] && processData)
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                                responseString = [p processData: responseString withParameters: processData];
+                        }
+                        
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
                                                                     @"callId" : callId,
                                                                     @"text" : responseString
@@ -189,7 +215,7 @@ static WebServicesAPI *sharedApi = nil;
                 
                 [[NSThread mainThread] performBlock:^{
                     if(saveToStorage && storageKey) {
-                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)])
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(storeValue:forKey:)])
                         {
                             id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
                             [p storeValue: responseString forKey: storageKey];
