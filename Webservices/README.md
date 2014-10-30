@@ -53,7 +53,9 @@ How to use
 
 	cobalt.ws.call({
 		url : "getUser",
-		userId: 42,
+		params : {
+                    userId: 42
+                },
 		storageKey : "user:412",
 		cacheCallback : function( data, relatedCall ){
 			cobalt.log('latest user data was', data.user )	
