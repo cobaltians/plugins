@@ -234,7 +234,8 @@ static WebServicesAPI *sharedApi = nil;
                 [[NSThread mainThread] performBlock:^{
                     NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSError", @"data" : @{
                                                                 @"callId" : callId,
-                                                                @"text" : responseString
+                                                                @"text" : responseString,
+                                                                @"errorCode" : @(response.statusCode)
                                                                 }};
                     
                     [viewController sendMessage: dataToSendToWeb];
