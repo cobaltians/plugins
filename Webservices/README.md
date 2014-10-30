@@ -45,8 +45,8 @@ How to use
 		},
 		defaultParameters:{
 			type : "POST",
-			errorCallback : function( callId, methodName, parameters ){
-				cobalt.log('WS ERROR', callId, methodName);
+			errorCallback : function( callId, errorCode ){
+				cobalt.log('WS ERROR', callId, errorCode);
 			}
 		}
 	});
@@ -104,8 +104,9 @@ If error occurs, native sends this to web
 	
 	{ type : "plugin", name : "webservices", action : "onWSError", data : {
 		callId : 2312, //previously generated callId
-		data : {} // the data that was given by the server,
-		text : "" // the server response as text if JSON parse of the response failed
+		data : {}, // the data that was given by the server,
+		text : "", // the server response as text if JSON parse of the response failed,
+		errorCode : 401 //the error code sent by the server
 	}}
 
 If saveToStorage was true, native store the result with the storageKey
