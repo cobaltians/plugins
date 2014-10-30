@@ -49,7 +49,7 @@ How to use
 				cobalt.log('WS ERROR', callId, methodName);
 			}
 		}
-	);
+	});
 
 	cobalt.ws.call({
 		url : "getUser",
