@@ -10,20 +10,24 @@
 
 @implementation CobaltWebservicesPlugin
 
-- (id)init{
-    if (self = [super init]) {
-        //
+- (id)init
+{
+    if (self = [super init])
+    {
         self.callId = @0;
     }
+    
     return self;
 }
 
-- (void)onMessageFromCobaltController:(CobaltViewController *)viewController andData: (NSDictionary *)data {
+- (void)onMessageFromCobaltController:(CobaltViewController *)viewController andData: (NSDictionary *)data
+{
     _viewController = viewController;
     
      NSString * callback = [data objectForKey:kJSCallback];
     
-    @synchronized(self.callId) {
+    @synchronized(self.callId)
+    {
         self.callId = @([self.callId intValue] + 1);
         [_viewController sendCallback: callback withData: @{ @"callId": self.callId}];
     

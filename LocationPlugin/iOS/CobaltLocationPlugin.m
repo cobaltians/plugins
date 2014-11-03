@@ -10,56 +10,73 @@
 
 @implementation CobaltLocationPlugin
 
-- (id)init{
-	if (self = [super init]) {
+- (id)init
+{
+	if (self = [super init])
+    {
         _locationManager = [[CLLocationManager alloc] init];
         _locationManager.distanceFilter = kCLDistanceFilterNone; // whenever we move
         _locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters; // 100 m
         _locationManager.delegate = self;
         
-        if([_locationManager respondsToSelector: @selector(requestWhenInUseAuthorization)]) {
+        if([_locationManager respondsToSelector: @selector(requestWhenInUseAuthorization)])
+        {
             [_locationManager requestWhenInUseAuthorization];
-        } else {
+        }
+        else
+        {
             [_locationManager startUpdatingLocation];
         }
     }
+    
 	return self;
 }
 
-- (void)onMessageFromCobaltController:(CobaltViewController *)viewController andData: (NSDictionary *)data {
+- (void)onMessageFromCobaltController:(CobaltViewController *)viewController andData: (NSDictionary *)data
+{
     _viewController = viewController;
     
     _sendToWeb = YES;
     
-    if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied) {
+    if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied)
+    {
         [self sendErrorToWeb];
-    } else if(_locationManager.location && ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusNotDetermined)) {
+    }
+    else if(_locationManager.location && ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusNotDetermined))
+    {
         [self sendLocationToWeb: _locationManager.location];
     }
 }
 
--(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {
+-(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
+{
     [self sendLocationToWeb: newLocation];
 }
 
--(void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+-(void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
+{
     [self sendErrorToWeb];
 }
 
-- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-    if(status == kCLAuthorizationStatusAuthorized) {
-        if(_locationManager.location) {
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    if(status == kCLAuthorizationStatusAuthorized)
+    {
+        if(_locationManager.location)
+        {
             _sendToWeb = YES;
             [self sendLocationToWeb: _locationManager.location];
         }
     }
     
-    if([_locationManager respondsToSelector: @selector(requestWhenInUseAuthorization)]) {
+    if([_locationManager respondsToSelector: @selector(requestWhenInUseAuthorization)])
+    {
         [_locationManager startUpdatingLocation];
     }
 }
 
-- (void)sendLocationToWeb: (CLLocation *) location {
+- (void)sendLocationToWeb: (CLLocation *) location
+{
     if(!_sendToWeb)
         return;
     
@@ -73,16 +90,20 @@
     //[_locationManager stopUpdatingLocation];
 }
 
-- (void)sendErrorToWeb {
+- (void)sendErrorToWeb
+{
     if(!_sendToWeb)
         return;
     
     _sendToWeb = NO;
     
-    if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied) {
+    if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied)
+    {
         NSDictionary * data = @{ kJSType : kJSTypePlugin, kJSPluginName : @"location", kJSData : @{@"error": @YES, @"code": @"DISABLED", @"text" : @"Location detection has been disabled by user"}};
         [_viewController sendMessage: data];
-    } else {
+    }
+    else
+    {
         NSDictionary * data = @{ kJSType : kJSTypePlugin, kJSPluginName : @"location", kJSData : @{@"error": @YES, @"code": @"NULL", @"text" : @"No location found"}};
         [_viewController sendMessage: data];
     }
