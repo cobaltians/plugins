@@ -86,7 +86,7 @@ When **cobalt.ws.call** is called on JS side, JS sends this to native :
 		saveToStorage : true/false,
 		sendCacheResult : true/false,
 		storageKey : "", //optionnal
-		filterData : {} //optionnal
+		processData : {} //optionnal
 	}, callback : 412 }
 	
 As soon as request comes, native calls the callback with a generated callId
