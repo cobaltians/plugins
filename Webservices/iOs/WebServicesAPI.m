@@ -169,7 +169,7 @@ static WebServicesAPI *sharedApi = nil;
             
             NSMutableString * requestURL = [NSMutableString stringWithString: url];
             
-            if([type isEqualToString: @"GET"])
+            if([type isEqualToString: @"GET"] || [type isEqualToString: @"DELETE"])
             {
                 [requestURL appendString: @"?"];
                 for(NSString * key in [params allKeys])
@@ -177,9 +177,8 @@ static WebServicesAPI *sharedApi = nil;
                     [requestURL appendFormat: @"%@=%@&", key, [params objectForKey: key]];
                 }
             }
-            else if([type isEqualToString: @"POST"])
+            else if([type isEqualToString: @"POST"] || [type isEqualToString: @"PUT"])
             {
-                [request setHTTPMethod:@"POST"];
                 NSMutableString * postString = [NSMutableString stringWithString: @""];
                 for(NSString * key in [params allKeys])
                 {
@@ -194,6 +193,7 @@ static WebServicesAPI *sharedApi = nil;
                 return;
             }
             
+            [request setHTTPMethod: type];
             [request setURL: [NSURL URLWithString: requestURL]];
             
             if (DEBUGAPI) NSLog(@"%@", request);
@@ -211,9 +211,8 @@ static WebServicesAPI *sharedApi = nil;
             
             if (DEBUGAPI) NSLog(@"%@", responseString);
             
-            if (response.statusCode == 200)
+            if (response.statusCode < 400)
             {
-                
                 NSError *error;
                 
                 __block NSDictionary *data = [NSJSONSerialization JSONObjectWithData: requestData options:kNilOptions error:&error];
