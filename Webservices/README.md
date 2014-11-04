@@ -22,7 +22,7 @@ How to use
 		},
 		defaultParameters:{
 			type : "GET", //default to GET
-			errorCallback : function( callId, methodName, parameters ){}
+			errorCallback : function( data, errorCode, concernedCall ){}
 		}
 	});
 	
@@ -30,9 +30,9 @@ How to use
 		url : "", //added to base.url if defined
 		params :{},
 		storageKey : "", //result will be saved at this key into storage
-		successCallback : function( data ){} //called at WS call end. 
-		cacheCallback : function( data ){}   //called if something into storageKey
-		errorCallback : function( callId, methodName, parameters ){}
+		successCallback : function( data, concernedCall ){} //called at WS call end. 
+		cacheCallback : function( data, concernedCall ){}   //called if something into storageKey
+		errorCallback : function( data, errorCode, concernedCall ){}
 	});
 
 
@@ -45,8 +45,8 @@ How to use
 		},
 		defaultParameters:{
 			type : "POST",
-			errorCallback : function( callId, errorCode ){
-				cobalt.log('WS ERROR', callId, errorCode);
+			errorCallback : function( data, error, concernedCall ){
+				cobalt.log('WS ERROR', error, data);
 			}
 		}
 	});
@@ -57,17 +57,17 @@ How to use
                     userId: 42
                 },
 		storageKey : "user:412",
-		cacheCallback : function( data, relatedCall ){
+		cacheCallback : function( data, concernedCall ){
 			cobalt.log('latest user data was', data.user )	
 		},
-		successCallback : function( data, relatedCall ){
+		successCallback : function( data, concernedCall ){
 			cobalt.log('server user data is', data.user )
 		}
 	})
 	
 	cobalt.ws.call({
 		storageKey : "user:412",
-		cacheCallback : function( data, relatedCall ){
+		cacheCallback : function( data, concernedCall ){
 			if (data){
 				cobalt.log('latest user data was', data.user )	
 			}
@@ -127,11 +127,11 @@ User can also get the result form cache without calling server again like this :
 
 	cobalt.ws.call({
 		storageKey : "user:412",
-		cacheCallback : function( data, relatedCall ){
+		cacheCallback : function( data, concernedCall ){
 			cobalt.log('latest user data was', data.user )	
 		},
-		cacheError : function( err, relatedCall  ){
-			cobalt.log('error retrieving user ', err )	
+		cacheError : function( error, concernedCall  ){
+			cobalt.log('error retrieving user ', error )	
 		}
 	})
 
@@ -155,7 +155,7 @@ A method named "treatData" on the native side should be overrided to filter or s
 
 **storeValue and storedValueForKey** :
 
-Cobalt is storing cache data into NSUserDefault on iOS and into XXXXXXXX for Android. 
+Cobalt is storing cache data into NSUserDefault on iOS and into SharedPreferences for Android. 
 These two methos on the native side are overridable to change the way data is stored.
 
 * storeValue takes the storageKey and the data and should store the data somewhere
