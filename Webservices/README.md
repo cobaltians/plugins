@@ -22,7 +22,7 @@ How to use
 		},
 		defaultParameters:{
 			type : "GET", //default to GET
-			errorCallback : function( data, errorCode, concernedCall ){}
+			errorCallback : function( data, errir, concernedCall ){}
 		}
 	});
 	
@@ -30,9 +30,10 @@ How to use
 		url : "", //added to base.url if defined
 		params :{},
 		storageKey : "", //result will be saved at this key into storage
-		successCallback : function( data, concernedCall ){} //called at WS call end. 
-		cacheCallback : function( data, concernedCall ){}   //called if something into storageKey
-		errorCallback : function( data, errorCode, concernedCall ){}
+		successCallback : function( data, concernedCall ){}, //called at WS call end. 
+		errorCallback : function( data, error, concernedCall ){}, // call on WS error
+		cacheCallback : function( data, concernedCall ){},   //called if something into storageKey
+		cacheError : function( error, concernedCall ){},   //called if error with storage
 	});
 
 
