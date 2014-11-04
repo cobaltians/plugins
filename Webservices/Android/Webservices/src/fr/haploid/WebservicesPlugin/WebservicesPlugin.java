@@ -67,15 +67,10 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
     @Override
     public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
         CobaltFragment fragment = webContainer.getFragment();
-
-        boolean catchAction = false;
-        Log.d(TAG, "message received = " + message.toString());
-
         try {
             String action = message.getString(Cobalt.kJSAction);
 
             if (action.equals(CALL)) {
-                catchAction = true;
                 int time = (int) System.currentTimeMillis();
                 JSONObject callId = new JSONObject();
                 callId.put(CALL_ID, time);
@@ -85,8 +80,7 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
                 fragment.sendCallback(message.getString(Cobalt.kJSCallback), callId);
             }
 
-            if (!catchAction)
-                if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
+            else if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {

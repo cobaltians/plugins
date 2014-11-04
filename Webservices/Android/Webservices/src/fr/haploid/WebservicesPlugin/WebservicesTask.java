@@ -27,7 +27,6 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
     private CobaltFragment mFragment;
 
     private static final String CALL_ID = "callId";
-    private static final String FILTER_DATA = "filterData";
     private static final String ON_STORAGE_RESULT = "onStorageResult";
     private static final String ON_STORAGE_ERROR = "onStorageError";
     private static final String ON_WS_ERROR = "onWSError";
@@ -83,9 +82,9 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
                         if (storedByKey != null) {
                             JSONObject dataFromStorage = new JSONObject(storedByKey);
                             dataFromStorage = WebservicesPlugin.treatData(dataFromStorage, data.optJSONObject(PROCESS_DATA), mFragment);
+                            dataFromStorage.put(CALL_ID, callId);
                             resultWs.put(Cobalt.kJSAction, ON_STORAGE_RESULT);
                             resultWs.put(Cobalt.kJSData, dataFromStorage);
-                            Log.d(TAG, "send to the web from storage = " + resultWs.toString());
                         }
                         else {
                             resultWs.put(Cobalt.kJSAction, ON_STORAGE_ERROR);
@@ -149,12 +148,9 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
                     }
 
                     responseHolder.put(TEXT, buffer.toString() );
-                    responseHolder.put(WS_SUCCESS, true);
                 }
             }
-            else {
-                Log.d(TAG, "no key URL in data also do something dude");
-            }
+            responseHolder.put(WS_SUCCESS, true);
             return responseHolder;
 
         }
@@ -179,7 +175,6 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
             resultWs.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
             resultWs.put(Cobalt.kJSPluginName, WEBSERVICES);
 
-            // si WS renvoie un succes ou non
             if (jsonObject.getBoolean(WS_SUCCESS)) {
                 resultWs.put(Cobalt.kJSAction, ON_WS_RESULT);
             }
@@ -191,29 +186,27 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
                 }
             }
 
-            // construction de l'objet data
             JSONObject data = new JSONObject();
             data.put(CALL_ID, jsonObject.getLong(CALL_ID));
 
-            // jsonification possible ou non
             try {
                 JSONObject responseData = new JSONObject(jsonObject.getString(TEXT));
                 responseData = WebservicesPlugin.treatData(responseData, jsonObject.optJSONObject(PROCESS_DATA), mFragment);
                 data.put(Cobalt.kJSData, responseData);
-            }catch (JSONException e) {
+            }
+            catch (JSONException e) {
                 data.put(TEXT, jsonObject.get(TEXT));
             }
 
             resultWs.put(Cobalt.kJSData, data);
 
-            // Storage
-            if (jsonObject.getBoolean(SAVE_TO_STORAGE)) {
+            if (jsonObject.optBoolean(SAVE_TO_STORAGE)) {
                 WebservicesPlugin.storeValue(data.toString(), jsonObject.getString(STORAGE_KEY), mFragment);
             }
 
-            // Envoi au web
             mFragment.sendMessage(resultWs);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             e.printStackTrace();
         }
     }
