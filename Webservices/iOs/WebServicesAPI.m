@@ -228,7 +228,8 @@ static WebServicesAPI *sharedApi = nil;
                         
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
                             @"callId" : callId,
-                            @"data" : data
+                            @"data" : data,
+                            @"statusCode" : @(response.statusCode)
                             }};
                         
                         [viewController sendMessage: dataToSendToWeb];
@@ -245,7 +246,8 @@ static WebServicesAPI *sharedApi = nil;
                         
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
                                                                     @"callId" : callId,
-                                                                    @"text" : responseString
+                                                                    @"text" : responseString,
+                                                                    @"statusCode" : @(response.statusCode)
                                                                     }};
                         
                         [viewController sendMessage: dataToSendToWeb];
@@ -281,7 +283,7 @@ static WebServicesAPI *sharedApi = nil;
                     NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSError", @"data" : @{
                                                                 @"callId" : callId,
                                                                 @"text" : responseString,
-                                                                @"errorCode" : @(response.statusCode)
+                                                                @"statusCode" : @(response.statusCode)
                                                                 }};
                     
                     [viewController sendMessage: dataToSendToWeb];
