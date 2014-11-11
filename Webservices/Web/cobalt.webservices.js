@@ -17,8 +17,6 @@
         calls:{},
 
         init:function(options){
-            cobalt.log('init webservices plugin with options', options)
-
             //create shortcuts
             cobalt.ws={
                 call : this.call.bind(this),
@@ -30,6 +28,7 @@
 
         },
         config:function(settings){
+            cobalt.log('config webservices plugin with settings', settings)
             if (settings){
                 if (settings.base){
                     this.settings.base = cobalt.utils.extend(this.settings.base, settings.base);
