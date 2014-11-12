@@ -208,7 +208,7 @@ static WebServicesAPI *sharedApi = nil;
             
             if (DEBUGAPI) NSLog(@"%@", responseString);
             
-            if (response.statusCode < 400)
+            if ((response.statusCode < 400) && (response.statusCode != 0))
             {
                 NSError *error;
                 
