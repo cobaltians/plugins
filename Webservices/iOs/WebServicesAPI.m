@@ -85,6 +85,7 @@ static WebServicesAPI *sharedApi = nil;
             NSNumber * sendCacheResult = [data objectForKey: @"sendCacheResult"];
             NSString * storageKey = [data objectForKey: @"storageKey"];
             NSDictionary * processData = [data objectForKey: @"processData"];
+            NSDictionary * HTTPHeaders = [data objectForKey: @"headers"];
 
             if([sendCacheResult boolValue])
             {
@@ -196,6 +197,12 @@ static WebServicesAPI *sharedApi = nil;
             [request setHTTPMethod: type];
             [request setURL: [NSURL URLWithString: requestURL]];
             
+            for (NSString* key in HTTPHeaders) {
+                NSString * value = [HTTPHeaders objectForKey:key];
+                [request addValue: value forHTTPHeaderField: key];
+            }
+                
+                
             if (DEBUGAPI) NSLog(@"%@", request);
             
             NSError * errorHttp = nil;
