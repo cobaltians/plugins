@@ -80,7 +80,7 @@ static WebServicesAPI *sharedApi = nil;
         {
             NSString * url = [data objectForKey: @"url"];
             NSString * type = [data objectForKey: @"type"];
-            NSDictionary * params = [data objectForKey: @"params"];
+            NSString * params = [data objectForKey: @"params"];
             NSNumber * saveToStorage = [data objectForKey: @"saveToStorage"];
             NSNumber * sendCacheResult = [data objectForKey: @"sendCacheResult"];
             NSString * storageKey = [data objectForKey: @"storageKey"];
@@ -172,21 +172,11 @@ static WebServicesAPI *sharedApi = nil;
             
             if([type isEqualToString: @"GET"] || [type isEqualToString: @"DELETE"])
             {
-                [requestURL appendString: @"?"];
-                for(NSString * key in [params allKeys])
-                {
-                    [requestURL appendFormat: @"%@=%@&", key, [params objectForKey: key]];
-                }
+                [requestURL appendFormat: @"?%@", params];
             }
             else if([type isEqualToString: @"POST"] || [type isEqualToString: @"PUT"])
             {
-                NSMutableString * postString = [NSMutableString stringWithString: @""];
-                for(NSString * key in [params allKeys])
-                {
-                    [postString appendFormat: @"%@=%@&", key, [params objectForKey: key]];
-                }
-                
-                NSData *postData = [postString dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
+                NSData *postData = [params dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
                 [request setHTTPBody: postData];
             }
             else
