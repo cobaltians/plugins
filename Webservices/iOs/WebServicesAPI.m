@@ -178,7 +178,8 @@ static WebServicesAPI *sharedApi = nil;
             {
                 NSData *postData = [params dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
                 [request setHTTPBody: postData];
-                //[request setValue: @"application/x-www-form-urlencoded" forKey: @"Content-Type"];
+                //default content-type for POST request
+                [request setValue: @"application/x-www-form-urlencoded" forKey: @"Content-Type"];
             }
             else
             {
