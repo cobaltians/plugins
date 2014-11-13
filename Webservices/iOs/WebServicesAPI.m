@@ -178,6 +178,7 @@ static WebServicesAPI *sharedApi = nil;
             {
                 NSData *postData = [params dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
                 [request setHTTPBody: postData];
+                //[request setValue: @"application/x-www-form-urlencoded" forKey: @"Content-Type"];
             }
             else
             {
@@ -189,7 +190,7 @@ static WebServicesAPI *sharedApi = nil;
             
             for (NSString* key in HTTPHeaders) {
                 NSString * value = [HTTPHeaders objectForKey:key];
-                [request addValue: value forHTTPHeaderField: key];
+                [request setValue: value forHTTPHeaderField: key];
             }
                 
                 
