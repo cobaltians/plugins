@@ -6,7 +6,6 @@
             base:{
                 url :"",
                 params : {}
-                ////newCall.headers['Accept'] = "*/*";
             },
             defaultParameters:{
                 type : "GET",
