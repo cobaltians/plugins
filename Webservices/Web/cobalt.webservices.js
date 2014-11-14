@@ -6,6 +6,7 @@
             base:{
                 url :"",
                 params : {}
+                ////newCall.headers['Accept'] = "*/*";
             },
             defaultParameters:{
                 type : "GET",
@@ -19,8 +20,12 @@
         init:function(options){
             //create shortcuts
             cobalt.ws={
+                config : this.config.bind(this),
                 call : this.call.bind(this),
-                config : this.config.bind(this)
+                pause : this.pause.bind(this),
+                resume : this.resume.bind(this),
+                clearPausedCalls : this.clearPausedCalls.bind(this),
+                clearStorage : this.clearStorage.bind(this)
             }
             if (options){
                 this.config(options);
@@ -54,8 +59,12 @@
                 if (params){
                     newCall.params = cobalt.utils.param(params);
                 }
-                newCall.headers = cobalt.utils.extend( this.settings.base.headers, options.headers );
                 newCall.type = options.type || this.settings.defaultParameters.type;
+
+                newCall.headers = cobalt.utils.extend( this.settings.defaultParameters.headers, options.headers );
+                if (! newCall.headers['User-Agent']){
+                    newCall.headers['User-Agent'] = navigator.userAgent;
+                }
             }
 
             if (newCall.storageKey){
@@ -70,13 +79,35 @@
                     newCall.sendCacheResult = options.saveToStorage || this.settings.defaultParameters.saveToStorage;
                 }
             }
-            self.send(newCall, function( data ){
+
+
+            self.send("call", newCall, function( data ){
                 cobalt.log('WS call started with id = '+data.callId, newCall)
                 newCall.callId = data.callId;
                 self.calls[data.callId] = newCall;
             })
 
 
+        },
+        /* abort pending calls and stack all following calls
+         *   call_ids = array of call ids.
+         *   if none, all calls are paused
+         */
+        pause:function( call_ids ){
+            self.send("pause", { call_ids : call_ids || [] })
+        },
+        /* resend aborted calls and send all stacked calls
+         *   call_ids = array of call ids.
+         *   if none, all stacked calls are resumed
+         */
+        resume:function( call_ids ){
+            self.send("resume", { call_ids : call_ids || [] })
+        },
+        clearPausedCalls:function(){
+            self.send("clearPausedCalls")
+        },
+        clearStorage:function(){
+            self.send("clearStorage")
         },
         handleEvent:function(json){
             cobalt.log('received webservices plugin event', json)
@@ -123,8 +154,8 @@
 
             
         },
-        send:function(data, callback){
-            cobalt.send({ type : "plugin", name : "webservices", action : "call", data : data }, callback);
+        send:function(action, data, callback){
+            cobalt.send({ type : "plugin", name : "webservices", action : action, data : data }, callback);
         }
     };
     cobalt.plugins.register(plugin);
