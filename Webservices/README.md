@@ -82,6 +82,7 @@ When **cobalt.ws.call** is called on JS side, JS sends this to native :
 	{ type : "plugin", name : "webservices", action : "call", data : {
 		url : ""
 		params : {},
+		headers : {},
 		type : "GET",
 		saveToStorage : true/false,
 		sendCacheResult : true/false,
@@ -143,8 +144,10 @@ You can resume all previously paused calls, and restart aborted ones with this :
     cobalt.ws.resume()
     //or specifying specific call ids
     cobalt.ws.resume([43,45,46])
+    //you can even send on object to modify stacked calls with specified parameters
+    cobalt.ws.resume([43,44],{ headers : {'Authorization':'myNewToken'}, params : { user_id : 42 }})
     
-You can't reusme WS calls that succeeded.
+You can't resume WS calls that succeeded.
 
 This is what is sent underneath to the native plugin
 
