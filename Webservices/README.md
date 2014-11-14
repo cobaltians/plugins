@@ -125,55 +125,6 @@ If already something in storageKey and sendCacheResult was true, native sends th
 	
 	
 
-## pausing and resuming
-
-You can pause all currently pending WS call with this :
-
-    cobalt.ws.pause()
-    //or specifying specific call ids
-    cobalt.ws.pause([43,45,46])
-    
-When pausing, all following calls will be stacked as long as no **resume()** or **clearPausedCalls()** method is called
-
-This is what is sent underneath to the native plugin
-
-    { type : "plugin", name : "webservices", action : "pause", data : { call_ids : [43,44,45]} }
-
-You can resume all previously paused calls, and restart aborted ones with this :
-
-    cobalt.ws.resume()
-    //or specifying specific call ids
-    cobalt.ws.resume([43,45,46])
-    //you can even send on object to modify stacked calls with specified parameters
-    cobalt.ws.resume([43,44],{ headers : {'Authorization':'myNewToken'}, params : { user_id : 42 }})
-    
-You can't resume WS calls that succeeded.
-
-This is what is sent underneath to the native plugin
-
-    { type : "plugin", name : "webservices", action : "resume", data : { call_ids : [43,44,45]} }
-
-If you want to clear all this paused calls you can call this 
-
-    cobalt.ws.clearPausedCalls()
-
-This is what is sent underneath to the native plugin
-
-    { type : "plugin", name : "webservices", action : "clearPausedCalls"}
-
-
-
-## clearing cache
-
-If you want to clear storage cache you can call this 
-
-    cobalt.ws.clearStorage()
-
-This is what is sent underneath to the native plugin
-
-    { type : "plugin", name : "webservices", action : "clearStorage"}
-    
-
 ##getting the cache result only :
 
 User can also get the result form cache without calling server again like this :
@@ -197,7 +148,7 @@ If something went wrong and sendCacheResult was true, native sends this to the w
 		text : "" // the error detail as string, for example : "EMPTY", "NOT_FOUND" or "UNKNOWN_ERROR"
 	}}
 
-## native side data processing :
+## native side processing :
 
 **processData**
 
@@ -210,13 +161,18 @@ A method named "treatData" on the native side should be overrided to filter or s
 **storeValue and storedValueForKey** :
 
 Cobalt is storing cache data into NSUserDefault on iOS and into SharedPreferences for Android. 
-These two methos on the native side are overridable to change the way data is stored.
+These two methods on the native side are overridable to change the way data is stored.
 
 * storeValue takes the storageKey and the data and should store the data somewhere
 * storedValueForKey takes the storageKey string as parameter and returns the data from somewhere
 
 if data or storageKey is null, those functions are not called by the Cobalt plugin
 	
+**handleError**
+
+This method on the native side is overridable to change the way errors are handled.
+
+
 
 
 
