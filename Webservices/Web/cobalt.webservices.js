@@ -99,8 +99,8 @@
          *   call_ids = array of call ids.
          *   if none, all stacked calls are resumed
          */
-        resume:function( call_ids ){
-            self.send("resume", { call_ids : call_ids || [] })
+        resume:function( call_ids , options ){
+            self.send("resume", { call_ids : call_ids || [], options : options || undefined })
         },
         clearPausedCalls:function(){
             self.send("clearPausedCalls")
