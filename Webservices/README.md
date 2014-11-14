@@ -148,6 +148,8 @@ If something went wrong and sendCacheResult was true, native sends this to the w
 		text : "" // the error detail as string, for example : "EMPTY", "NOT_FOUND" or "UNKNOWN_ERROR"
 	}}
 
+
+
 ## native side processing :
 
 **processData**
@@ -167,7 +169,19 @@ These two methods on the native side are overridable to change the way data is s
 * storedValueForKey takes the storageKey string as parameter and returns the data from somewhere
 
 if data or storageKey is null, those functions are not called by the Cobalt plugin
-	
+
+**clearStorage** 
+
+If you want to clear storage cache you can call this on the web side
+
+    cobalt.ws.clearStorage()
+
+This is what is sent underneath to the native plugin
+
+    { type : "plugin", name : "webservices", action : "clearStorage"}
+
+And, if you changed things in "storeValue" and "storedValueForKey", override the clearStorage method on the native side for your own storage location.
+
 **handleError**
 
 This method on the native side is overridable to change the way errors are handled.
