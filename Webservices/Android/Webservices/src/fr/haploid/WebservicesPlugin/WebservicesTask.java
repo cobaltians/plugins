@@ -27,6 +27,7 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
     private CobaltFragment mFragment;
 
     private static final String CALL_ID = "callId";
+    private static final String CALL_WS = "callWS";
     private static final String ON_STORAGE_RESULT = "onStorageResult";
     private static final String ON_STORAGE_ERROR = "onStorageError";
     private static final String ON_WS_ERROR = "onWSError";
@@ -43,6 +44,9 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
     private static final String WEBSERVICES = "webservices";
     private static final String WS_SUCCESS = "ws_success";
 
+    /**************
+    * Constructor
+    **************/
     public WebservicesTask (CobaltFragment fragment) {
         mFragment = fragment;
     }
@@ -57,16 +61,20 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         JSONObject responseHolder = new JSONObject();
-        boolean wsSucces = false;
+
+
+        WebservicesResponseData responseData = null;
 
         try {
             long callId = jsonObject.getLong(CALL_ID);
 
             responseHolder.put(CALL_ID, callId );
             responseHolder.put(WS_SUCCESS, false);
+            responseHolder.put(CALL_WS, false);
             responseHolder.put(TEXT, "" );
 
             JSONObject data = jsonObject.getJSONObject(Cobalt.kJSData);
+            Log.d(TAG, "data on start = "+data.toString());
             boolean sendCacheResult = data.optBoolean(SEND_CACHE_RESULT, false);
 
             if (sendCacheResult) {
@@ -111,56 +119,18 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
                 }
 
                 responseHolder.put(SAVE_TO_STORAGE, saveToStorage);
-                Uri.Builder builder = new Uri.Builder();
-                builder.encodedPath(data.getString(URL));
 
-                JSONObject params = data.getJSONObject(PARAMS);
-                JSONArray namesOfParams = params.names();
-
-                for (int i=0 ; i<namesOfParams.length() ; i++) {
-                    String param = namesOfParams.getString(i);
-                    builder.appendQueryParameter(param, params.get(param).toString());
-                }
-                java.net.URL url = new URL(builder.build().toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod(data.getString(TYPE));
-                urlConnection.connect();
-
-                int responseCode = urlConnection.getResponseCode();
-                responseHolder.put(STATUS_CODE, responseCode);
-
-                if (responseCode == 200) {
-                    InputStream inputStream = urlConnection.getInputStream();
-                    StringBuffer buffer = new StringBuffer();
-                    if (inputStream == null) {
-                        return responseHolder;
-                    }
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line + "\n");
-                    }
-
-                    if (buffer.length() == 0) {
-                        return responseHolder;
-                    }
-
-                    responseHolder.put(TEXT, buffer.toString() );
+                responseData = WebservicesHelper.downloadFromServer(data.getString(URL), data.getJSONObject(PARAMS), data.getString(TYPE));
+                if (responseData != null) {
+                    responseHolder.put(TEXT, responseData.getResponseData());
+                    responseHolder.put(STATUS_CODE, responseData.getStatusCode());
+                    responseHolder.put(WS_SUCCESS, responseData.isSuccess());
+                    responseHolder.put(CALL_WS, true);
                 }
             }
-            responseHolder.put(WS_SUCCESS, true);
             return responseHolder;
-
         }
         catch (JSONException e) {
-            e.printStackTrace();
-            return responseHolder;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return responseHolder;
-        } catch (IOException e) {
             e.printStackTrace();
             return responseHolder;
         }
@@ -170,45 +140,47 @@ public class WebservicesTask extends AsyncTask<JSONObject, Void, JSONObject> {
     protected void onPostExecute(JSONObject jsonObject) {
         super.onPostExecute(jsonObject);
         JSONObject resultWs = new JSONObject();
-
         try {
-            resultWs.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
-            resultWs.put(Cobalt.kJSPluginName, WEBSERVICES);
+            if (jsonObject.getBoolean(CALL_WS)) {
+                resultWs.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
+                resultWs.put(Cobalt.kJSPluginName, WEBSERVICES);
 
-            if (jsonObject.getBoolean(WS_SUCCESS)) {
-                resultWs.put(Cobalt.kJSAction, ON_WS_RESULT);
-            }
-            else {
-                resultWs.put(Cobalt.kJSAction, ON_WS_ERROR);
+                if (jsonObject.getBoolean(WS_SUCCESS)) {
+                    resultWs.put(Cobalt.kJSAction, ON_WS_RESULT);
+                }
+                else {
+                    resultWs.put(Cobalt.kJSAction, ON_WS_ERROR);
+                }
+
                 int statusCode = jsonObject.optInt(STATUS_CODE, -1);
                 if (statusCode != -1) {
                     resultWs.put(STATUS_CODE, statusCode);
                 }
+
+                JSONObject data = new JSONObject();
+                data.put(CALL_ID, jsonObject.getLong(CALL_ID));
+
+                try {
+                    JSONObject responseData = new JSONObject(jsonObject.getString(TEXT));
+                    responseData = WebservicesPlugin.treatData(responseData, jsonObject.optJSONObject(PROCESS_DATA), mFragment);
+                    data.put(Cobalt.kJSData, responseData);
+                }
+                catch (JSONException e) {
+                    data.put(TEXT, jsonObject.get(TEXT));
+                }
+
+                resultWs.put(Cobalt.kJSData, data);
+
+                if (jsonObject.optBoolean(SAVE_TO_STORAGE)) {
+                    WebservicesPlugin.storeValue(data.toString(), jsonObject.getString(STORAGE_KEY), mFragment);
+                }
+
+                mFragment.sendMessage(resultWs);
             }
-
-            JSONObject data = new JSONObject();
-            data.put(CALL_ID, jsonObject.getLong(CALL_ID));
-
-            try {
-                JSONObject responseData = new JSONObject(jsonObject.getString(TEXT));
-                responseData = WebservicesPlugin.treatData(responseData, jsonObject.optJSONObject(PROCESS_DATA), mFragment);
-                data.put(Cobalt.kJSData, responseData);
-            }
-            catch (JSONException e) {
-                data.put(TEXT, jsonObject.get(TEXT));
-            }
-
-            resultWs.put(Cobalt.kJSData, data);
-
-            if (jsonObject.optBoolean(SAVE_TO_STORAGE)) {
-                WebservicesPlugin.storeValue(data.toString(), jsonObject.getString(STORAGE_KEY), mFragment);
-            }
-
-            mFragment.sendMessage(resultWs);
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
-    }
 
+    }
 }
