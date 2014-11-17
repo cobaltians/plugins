@@ -39,6 +39,7 @@ import android.util.Log;
 import java.io.*;
 import java.net.*;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,6 +54,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     private static final String kJSStorageKey = "storageKey";
     private static final String kJSProcessData = "processData";
     private static final String kJSUrl = "url";
+    private static final String kJSHeaders = "headers";
     private static final String kJSParams = "params";
     private static final String kJSType = "type";
     private static final String JSTypeGET = "GET";
@@ -77,6 +79,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     private String mStorageKey;
     private JSONObject mProcessData;
     private String mUrl;
+    private JSONObject mHeaders;
     private String mParams;
     private String mType;
     private boolean mSaveToStorage;
@@ -91,7 +94,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
             mUrl = data.optString(kJSUrl, null);
 
             if (mUrl != null) {
-                // TODO: headers
+                mHeaders = data.optJSONObject(kJSHeaders);
                 mParams = data.optString(kJSParams);
                 mType = data.getString(kJSType);
                 mSaveToStorage = data.optBoolean(kJSSaveToStorage);
@@ -198,6 +201,19 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                         // TODO: set timeouts?
                         urlConnection.setRequestMethod(mType);
                         urlConnection.setDoInput(true);
+
+                        if (mHeaders != null) {
+                            JSONArray names = mHeaders.names();
+
+                            if (names != null) {
+                                int length = names.length();
+
+                                for (int i = 0 ; i < length ; i++) {
+                                    String name = names.getString(i);
+                                    urlConnection.setRequestProperty(name, mHeaders.get(name).toString());
+                                }
+                            }
+                        }
 
                         if (mParams != null
                             && ! mType.equalsIgnoreCase(JSTypeGET)) {
