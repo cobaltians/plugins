@@ -36,10 +36,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 
 import org.json.JSONException;
@@ -58,6 +55,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     private static final String kJSUrl = "url";
     private static final String kJSParams = "params";
     private static final String kJSType = "type";
+    private static final String JSTypeGET = "GET";
     private static final String kJSSaveToStorage = "saveToStorage";
 
     private static final String kJSSuccess = "ws_success";
@@ -93,6 +91,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
             mUrl = data.optString(kJSUrl, null);
 
             if (mUrl != null) {
+                // TODO: headers
                 mParams = data.optString(kJSParams);
                 mType = data.getString(kJSType);
                 mSaveToStorage = data.optBoolean(kJSSaveToStorage);
@@ -185,7 +184,8 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 Uri.Builder builder = new Uri.Builder();
                 builder.encodedPath(mUrl);
 
-                if (mParams != null) builder.encodedQuery(mParams);
+                if (mParams != null
+                    && mType.equalsIgnoreCase(JSTypeGET)) builder.encodedQuery(mParams);
 
                 JSONObject response = new JSONObject();
                 response.put(kJSSuccess, false);
@@ -194,9 +194,23 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                     URL url = new URL(builder.build().toString());
 
                     try {
-
                         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                        // TODO: set timeouts?
                         urlConnection.setRequestMethod(mType);
+                        urlConnection.setDoInput(true);
+
+                        if (mParams != null
+                            && ! mType.equalsIgnoreCase(JSTypeGET)) {
+                            urlConnection.setDoOutput(true);
+
+                            OutputStream outputStream = urlConnection.getOutputStream();
+                            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+                            writer.write(mParams);
+                            writer.flush();
+                            writer.close();
+                            outputStream.close();
+                        }
+
                         urlConnection.connect();
 
                         int responseCode = urlConnection.getResponseCode();
@@ -214,8 +228,6 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                         if (buffer.length() != 0) response.put(kJSText, buffer.toString());
 
                         response.put(kJSSuccess, true);
-
-                        return response;
                     }
                     catch (ProtocolException exception) {
                         if (Cobalt.DEBUG) {
@@ -226,6 +238,8 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                     catch (IOException exception) {
                         exception.printStackTrace();
                     }
+
+                    return response;
                 }
                 catch (MalformedURLException exception) {
                     if (Cobalt.DEBUG) {
