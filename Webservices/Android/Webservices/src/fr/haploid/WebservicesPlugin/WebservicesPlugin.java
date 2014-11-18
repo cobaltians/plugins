@@ -59,6 +59,7 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
     @Override
     public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
         try {
+
             String action = message.getString(Cobalt.kJSAction);
 
             if (action.equals(JSActionCall)) {

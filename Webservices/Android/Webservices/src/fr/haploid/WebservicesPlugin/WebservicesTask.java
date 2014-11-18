@@ -100,10 +100,11 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 mSaveToStorage = data.optBoolean(kJSSaveToStorage);
             }
 
+            if (mSendCacheResult || mUrl != null) mProcessData = data.optJSONObject(kJSProcessData);
+
             if (mSendCacheResult
                 || (mUrl != null && mSaveToStorage)) {
                 mStorageKey = data.getString(kJSStorageKey);
-                mProcessData = data.optJSONObject(kJSProcessData);
             }
         }
         catch (JSONException exception) {
@@ -167,7 +168,6 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                     cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
                     cacheResultMessage.put(kJSText, JSTextEmpty);
                 }
-
                 mFragment.sendMessage(cacheResultMessage);
             }
 
@@ -187,7 +187,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 Uri.Builder builder = new Uri.Builder();
                 builder.encodedPath(mUrl);
 
-                if (mParams != null
+                if (! mParams.equals("")
                     && mType.equalsIgnoreCase(JSTypeGET)) builder.encodedQuery(mParams);
 
                 JSONObject response = new JSONObject();
@@ -215,7 +215,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                             }
                         }
 
-                        if (mParams != null
+                        if (! mParams.equals("")
                             && ! mType.equalsIgnoreCase(JSTypeGET)) {
                             urlConnection.setDoOutput(true);
 
