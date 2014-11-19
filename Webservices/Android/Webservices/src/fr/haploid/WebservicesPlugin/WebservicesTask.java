@@ -310,7 +310,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 mFragment.sendMessage(message);
 
                 if (mSaveToStorage && mStorageKey != null) {
-                    WebservicesPlugin.storeValue(data.toString(), mStorageKey, mFragment);
+                    WebservicesPlugin.storeValue(text, mStorageKey, mFragment);
                 }
                 else if (Cobalt.DEBUG) {
                     Log.w(Cobalt.TAG,   TAG + " - onPostExecute: missing storageKey field \n"
