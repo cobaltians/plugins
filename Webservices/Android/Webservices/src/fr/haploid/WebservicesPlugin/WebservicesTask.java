@@ -135,8 +135,8 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
 
                         if (storedValue != null) {
                             try {
-                                JSONObject storedData = new JSONObject(storedValue);
-                                storedData.put(Cobalt.kJSData, WebservicesPlugin.treatData(storedData, mProcessData, mFragment));
+                                JSONObject storedData = new JSONObject();
+                                storedData.put(Cobalt.kJSData, WebservicesPlugin.treatData(new JSONObject(storedValue), mProcessData, mFragment));
                                 storedData.put(kJSCallId, mCallId);
 
                                 cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageResult);
