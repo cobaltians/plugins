@@ -34,6 +34,7 @@ import org.json.JSONObject;
 public interface WebservicesInterface {
 
     public JSONObject treatData(JSONObject data, JSONObject process);
+    public boolean handleError(JSONObject call, JSONObject response);
     public boolean storeValue(String value, String key);
     public String storedValueForKey(String key);
 }

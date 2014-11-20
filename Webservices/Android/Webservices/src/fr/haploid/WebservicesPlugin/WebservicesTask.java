@@ -74,6 +74,7 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     private static final String JSOnWSError = "onWSError";
 
     private final CobaltFragment mFragment;
+    private JSONObject mCall;
     private long mCallId;
     private boolean mSendCacheResult;
     private String mStorageKey;
@@ -84,12 +85,13 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     private String mType;
     private boolean mSaveToStorage;
 
-    public WebservicesTask(CobaltFragment fragment, JSONObject message) {
+    public WebservicesTask(CobaltFragment fragment, JSONObject call) {
         mFragment = fragment;
+        mCall = call;
 
         try {
-            mCallId = message.getLong(kJSCallId);
-            JSONObject data = message.getJSONObject(Cobalt.kJSData);
+            mCallId = call.getLong(kJSCallId);
+            JSONObject data = call.getJSONObject(Cobalt.kJSData);
             mSendCacheResult = data.optBoolean(kJSSendCacheResult);
             mUrl = data.optString(kJSUrl, null);
 
@@ -307,7 +309,8 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 }
 
                 message.put(Cobalt.kJSData, data);
-                mFragment.sendMessage(message);
+
+                if (response.getBoolean(kJSSuccess) || WebservicesPlugin.handleError(mCall, message, mFragment)) mFragment.sendMessage(message);
 
                 if (mSaveToStorage && mStorageKey != null) {
                     WebservicesPlugin.storeValue(text, mStorageKey, mFragment);

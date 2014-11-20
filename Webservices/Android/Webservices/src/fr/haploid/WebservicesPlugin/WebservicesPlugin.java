@@ -100,6 +100,10 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
         else return data;
     }
 
+    public static boolean handleError(JSONObject call, JSONObject response, CobaltFragment fragment) {
+        return ! WebservicesInterface.class.isAssignableFrom(fragment.getClass()) || ((WebservicesInterface) fragment).handleError(call, response);
+    }
+
     public static void storeValue(String key, String value, CobaltFragment fragment) {
         if (WebservicesInterface.class.isAssignableFrom(fragment.getClass())
             && ! ((WebservicesInterface) fragment).storeValue(value, key)) {
