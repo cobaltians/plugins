@@ -43,26 +43,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
+public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
 
     private static final String TAG = WebservicesTask.class.getSimpleName();
 
     private static final String JSPluginNameWebservices = "webservices";
 
-    private static final String kJSCallId = "callId";
-    private static final String kJSSendCacheResult = "sendCacheResult";
-    private static final String kJSStorageKey = "storageKey";
-    private static final String kJSProcessData = "processData";
-    private static final String kJSUrl = "url";
-    private static final String kJSHeaders = "headers";
-    private static final String kJSParams = "params";
-    private static final String kJSType = "type";
+    public static final String kJSCallId = "callId";
+    public static final String kJSSendCacheResult = "sendCacheResult";
+    public static final String kJSStorageKey = "storageKey";
+    public static final String kJSProcessData = "processData";
+    public static final String kJSUrl = "url";
+    public static final String kJSHeaders = "headers";
+    public static final String kJSParams = "params";
+    public static final String kJSType = "type";
     private static final String JSTypeGET = "GET";
-    private static final String kJSSaveToStorage = "saveToStorage";
+    public static final String kJSSaveToStorage = "saveToStorage";
 
     private static final String kJSSuccess = "ws_success";
-    private static final String kJSStatusCode = "statusCode";
-    private static final String kJSText = "text";
+    public static final String kJSStatusCode = "statusCode";
+    public static final String kJSText = "text";
 
     private static final String JSActionOnStorageResult = "onStorageResult";
     private static final String JSActionOnStorageError = "onStorageError";
@@ -70,8 +70,8 @@ final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     private static final String JSTextNotFound = "NOT_FOUND";
     private static final String JSTextUnknownError = "UNKNOW_ERROR";
 
-    private static final String JSOnWSResult = "onWSResult";
-    private static final String JSOnWSError = "onWSError";
+    public static final String JSOnWSResult = "onWSResult";
+    public static final String JSOnWSError = "onWSError";
 
     private final CobaltFragment mFragment;
     private JSONObject mCall;
