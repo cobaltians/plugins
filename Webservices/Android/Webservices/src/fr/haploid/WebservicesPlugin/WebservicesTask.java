@@ -128,6 +128,10 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 cacheResultMessage.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
                 cacheResultMessage.put(Cobalt.kJSPluginName, JSPluginNameWebservices);
 
+                JSONObject storedData = new JSONObject();
+                storedData.put(kJSCallId, mCallId);
+                cacheResultMessage.put(Cobalt.kJSData, storedData);
+
                 int storageSize = WebservicesData.getCountItem();
                 if (storageSize > 0) {
                     if (mStorageKey != null) {
@@ -135,12 +139,13 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
 
                         if (storedValue != null) {
                             try {
-                                JSONObject storedData = new JSONObject();
+                                //JSONObject storedData = new JSONObject();
+                                //storedData.put(kJSCallId, mCallId);
+
                                 storedData.put(Cobalt.kJSData, WebservicesPlugin.treatData(new JSONObject(storedValue), mProcessData, mFragment));
-                                storedData.put(kJSCallId, mCallId);
 
                                 cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageResult);
-                                cacheResultMessage.put(Cobalt.kJSData, storedData);
+                                //cacheResultMessage.put(Cobalt.kJSData, storedData);
                             }
                             catch (JSONException exception) {
                                 if (Cobalt.DEBUG) {
@@ -149,27 +154,33 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                                 }
 
                                 cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                                cacheResultMessage.put(kJSText, JSTextUnknownError);
+                                //cacheResultMessage.put(kJSText, JSTextUnknownError);
+                                storedData.put(kJSText, JSTextUnknownError);
                             }
                         }
                         else {
                             if (Cobalt.DEBUG) Log.w(WebservicesPlugin.TAG, TAG + " - doInBackground: value not found in cache for key " + mStorageKey + ".");
 
                             cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                            cacheResultMessage.put(kJSText, JSTextNotFound);
+                            //cacheResultMessage.put(kJSText, JSTextNotFound);
+                            storedData.put(kJSText, JSTextNotFound);
                         }
                     }
                     else {
                         cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                        cacheResultMessage.put(kJSText, JSTextUnknownError);
+                        //cacheResultMessage.put(kJSText, JSTextUnknownError);
+                        storedData.put(kJSText, JSTextUnknownError);
+
                     }
                 }
                 else {
                     if (Cobalt.DEBUG) Log.w(WebservicesPlugin.TAG, TAG + " - doInBackground: cache is empty.");
 
                     cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                    cacheResultMessage.put(kJSText, JSTextEmpty);
+                    //cacheResultMessage.put(kJSText, JSTextEmpty);
+                    storedData.put(kJSText, JSTextEmpty);
                 }
+                cacheResultMessage.put(Cobalt.kJSData, storedData);
                 mFragment.sendMessage(cacheResultMessage);
             }
 
@@ -284,15 +295,14 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 message.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
                 message.put(Cobalt.kJSPluginName, JSPluginNameWebservices);
 
-                if (response.getBoolean(kJSSuccess)) message.put(Cobalt.kJSAction, JSOnWSResult);
-                else {
-                    message.put(Cobalt.kJSAction, JSOnWSError);
-                    int statusCode = response.optInt(kJSStatusCode, -1);
-                    if (statusCode != -1) message.put(kJSStatusCode, statusCode);
-                }
-
                 JSONObject data = new JSONObject();
                 data.put(kJSCallId, mCallId);
+
+                if (response.getBoolean(kJSSuccess)) message.put(Cobalt.kJSAction, JSOnWSResult);
+                else  message.put(Cobalt.kJSAction, JSOnWSError);
+
+                int statusCode = response.optInt(kJSStatusCode, -1);
+                if (statusCode != -1) data.put(kJSStatusCode, statusCode);
 
                 String text = response.optString(kJSText, null);
                 if (text != null) {
