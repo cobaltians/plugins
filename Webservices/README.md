@@ -100,6 +100,7 @@ When WS server answers, native sends this to web
 		callId : 2312, //previously generated callId
 		data : {} // the data that was given by the server
 		text : "" // the server response as text if JSON parse of the response failed
+		statusCode : 401 //the status code sent by the server
 	}}
 	
 
@@ -109,7 +110,7 @@ If error occurs, native sends this to web
 		callId : 2312, //previously generated callId
 		data : {}, // the data that was given by the server,
 		text : "", // the server response as text if JSON parse of the response failed,
-		errorCode : 401 //the error code sent by the server
+		statusCode : 401 //the status code sent by the server
 	}}
 
 If saveToStorage was true, native store the result with the storageKey
