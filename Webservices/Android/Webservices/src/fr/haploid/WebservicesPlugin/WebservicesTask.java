@@ -285,14 +285,13 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 message.put(Cobalt.kJSPluginName, JSPluginNameWebservices);
 
                 if (response.getBoolean(kJSSuccess)) message.put(Cobalt.kJSAction, JSOnWSResult);
-                else {
-                    message.put(Cobalt.kJSAction, JSOnWSError);
-                    int statusCode = response.optInt(kJSStatusCode, -1);
-                    if (statusCode != -1) message.put(kJSStatusCode, statusCode);
-                }
+                else message.put(Cobalt.kJSAction, JSOnWSError);
 
                 JSONObject data = new JSONObject();
                 data.put(kJSCallId, mCallId);
+
+                int statusCode = response.optInt(kJSStatusCode, -1);
+                if (statusCode != -1) data.put(kJSStatusCode, statusCode);
 
                 String text = response.optString(kJSText, null);
                 if (text != null) {
