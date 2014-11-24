@@ -298,6 +298,9 @@ static WebServicesAPI *sharedApi = nil;
                         case kCFURLErrorUserCancelledAuthentication:
                             errorCode = 401;
                             break;
+                        case kCFURLErrorBadServerResponse:
+                            errorCode = 406;
+                            break;
                             
                         default:
                             break;
