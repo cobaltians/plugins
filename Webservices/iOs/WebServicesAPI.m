@@ -71,21 +71,21 @@ static WebServicesAPI *sharedApi = nil;
 /*!
  \param :
  */
-- (void)doWebServicesRequestWithData: (NSDictionary *)data andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId
+- (void)doWebServicesRequestWithData: (NSDictionary *)dataToCreateRequest andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId
 {
     __unsafe_unretained WebServicesAPI * wsAPI = self;
     [queue addOperationWithBlock:^
     {
         @autoreleasepool
         {
-            NSString * url = [data objectForKey: @"url"];
-            NSString * type = [data objectForKey: @"type"];
-            NSString * params = [data objectForKey: @"params"];
-            NSNumber * saveToStorage = [data objectForKey: @"saveToStorage"];
-            NSNumber * sendCacheResult = [data objectForKey: @"sendCacheResult"];
-            NSString * storageKey = [data objectForKey: @"storageKey"];
-            NSDictionary * processData = [data objectForKey: @"processData"];
-            NSDictionary * HTTPHeaders = [data objectForKey: @"headers"];
+            NSString * url = [dataToCreateRequest objectForKey: @"url"];
+            NSString * type = [dataToCreateRequest objectForKey: @"type"];
+            NSString * params = [dataToCreateRequest objectForKey: @"params"];
+            NSNumber * saveToStorage = [dataToCreateRequest objectForKey: @"saveToStorage"];
+            NSNumber * sendCacheResult = [dataToCreateRequest objectForKey: @"sendCacheResult"];
+            NSString * storageKey = [dataToCreateRequest objectForKey: @"storageKey"];
+            NSDictionary * processData = [dataToCreateRequest objectForKey: @"processData"];
+            NSDictionary * HTTPHeaders = [dataToCreateRequest objectForKey: @"headers"];
 
             if([sendCacheResult boolValue])
             {
@@ -224,12 +224,20 @@ static WebServicesAPI *sharedApi = nil;
                         }
                         
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
-                            @"callId" : callId,
-                            @"data" : data,
-                            @"statusCode" : @(response.statusCode)
-                            }};
+                                                                    @"callId" : callId,
+                                                                    @"data" : data,
+                                                                    kStatusCode : @(response.statusCode)
+                                                                    }};
                         
-                        [viewController sendMessage: dataToSendToWeb];
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(handleWebResponseWithData:withRequest:)])
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                            [p handleWebResponseWithData: dataToSendToWeb withRequest: dataToCreateRequest];
+                        }
+                        else {
+                            [viewController sendMessage: dataToSendToWeb];
+                        }
+                        
                     } waitUntilDone:NO];
                 } else {
                     [[NSThread mainThread] performBlock:^
@@ -244,10 +252,18 @@ static WebServicesAPI *sharedApi = nil;
                         NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSResult", @"data" : @{
                                                                     @"callId" : callId,
                                                                     @"text" : responseString,
-                                                                    @"statusCode" : @(response.statusCode)
+                                                                    kStatusCode : @(response.statusCode)
                                                                     }};
                         
-                        [viewController sendMessage: dataToSendToWeb];
+                        if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(handleWebResponseWithData:withRequest:)])
+                        {
+                            id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                            [p handleWebResponseWithData: dataToSendToWeb withRequest: dataToCreateRequest];
+                        }
+                        else {
+                            [viewController sendMessage: dataToSendToWeb];
+                        }
+                        
                     } waitUntilDone:NO];
                 }
                 
@@ -277,13 +293,30 @@ static WebServicesAPI *sharedApi = nil;
             {
                 [[NSThread mainThread] performBlock:^
                 {
+                    int errorCode = -1;
+                    switch (errorHttp.code) {
+                        case kCFURLErrorUserCancelledAuthentication:
+                            errorCode = 401;
+                            break;
+                            
+                        default:
+                            break;
+                    }
+                    
                     NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSError", @"data" : @{
                                                                 @"callId" : callId,
                                                                 @"text" : responseString,
-                                                                @"statusCode" : @(response.statusCode)
+                                                                kStatusCode : @(errorCode)
                                                                 }};
                     
-                    [viewController sendMessage: dataToSendToWeb];
+                    if([viewController conformsToProtocol:@protocol(WebServicesStorageDelegate)] && [viewController respondsToSelector: @selector(handleErrorWithData:withRequest:)])
+                    {
+                        id<WebServicesStorageDelegate> p = (id<WebServicesStorageDelegate>)viewController;
+                        [p handleErrorWithData: dataToSendToWeb withRequest: dataToCreateRequest];
+                    }
+                    else {
+                        [viewController sendMessage: dataToSendToWeb];
+                    }
                 } waitUntilDone:NO];
             }
         }

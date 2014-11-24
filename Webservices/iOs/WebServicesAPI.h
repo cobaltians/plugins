@@ -5,8 +5,10 @@
 #import "NSThread+withBlocks.h"
 #import "CobaltViewController.h"
 
-#define DEBUGAPI    1
+#define DEBUGAPI    0
 
+
+#define kStatusCode @"statusCode"
 
 @protocol WebServicesStorageDelegate <NSObject>
 
@@ -16,6 +18,9 @@
 - (void)storeValue: (id)value forKey: (NSString *)key;
 
 - (id)processData: (id)data withParameters: (NSDictionary *)parameters;
+
+- (void)handleWebResponseWithData: (NSDictionary *)responseDict withRequest: (NSDictionary *)requestPararameters;
+- (void)handleErrorWithData: (NSDictionary *)errorDict withRequest: (NSDictionary *)requestPararameters;
 
 @end
 
