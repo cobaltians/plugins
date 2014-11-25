@@ -243,7 +243,10 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                         urlConnection.connect();
 
                         int responseCode = urlConnection.getResponseCode();
-                        response.put(kJSStatusCode, responseCode);
+                        if (responseCode != -1) {
+                            response.put(kJSStatusCode, responseCode);
+                            if (responseCode < 400) response.put(kJSSuccess, true);
+                        }
 
                         try {
                             InputStream inputStream = urlConnection.getInputStream();
@@ -263,8 +266,6 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                                 exception.printStackTrace();
                             }
                         }
-
-                        response.put(kJSSuccess, true);
                     }
                     catch (ProtocolException exception) {
                         if (Cobalt.DEBUG) {
@@ -330,7 +331,8 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
 
                 if (response.getBoolean(kJSSuccess) || WebservicesPlugin.handleError(mCall, message, mFragment)) mFragment.sendMessage(message);
 
-                if (mSaveToStorage && mStorageKey != null) {
+                if (mSaveToStorage
+                    && mStorageKey != null) {
                     WebservicesPlugin.storeValue(text, mStorageKey, mFragment);
                 }
                 else if (Cobalt.DEBUG) {
