@@ -245,16 +245,24 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                         int responseCode = urlConnection.getResponseCode();
                         response.put(kJSStatusCode, responseCode);
 
-                        InputStream inputStream = urlConnection.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                        StringBuffer buffer = new StringBuffer();
-                        String line;
+                        try {
+                            InputStream inputStream = urlConnection.getInputStream();
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                            StringBuffer buffer = new StringBuffer();
+                            String line;
 
-                        while ((line = reader.readLine()) != null) {
-                            buffer.append(line).append("\n");
+                            while ((line = reader.readLine()) != null) {
+                                buffer.append(line).append("\n");
+                            }
+
+                            if (buffer.length() != 0) response.put(kJSText, buffer.toString());
                         }
-
-                        if (buffer.length() != 0) response.put(kJSText, buffer.toString());
+                        catch (IOException exception) {
+                            if (Cobalt.DEBUG) {
+                                Log.i(WebservicesPlugin.TAG, TAG + " - doInBackground: no DATA returned by server.");
+                                exception.printStackTrace();
+                            }
+                        }
 
                         response.put(kJSSuccess, true);
                     }
