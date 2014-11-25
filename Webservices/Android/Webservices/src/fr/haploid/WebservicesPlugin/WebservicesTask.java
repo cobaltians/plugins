@@ -57,7 +57,10 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
     public static final String kJSHeaders = "headers";
     public static final String kJSParams = "params";
     public static final String kJSType = "type";
+    private static final String JSTypeDELETE = "DELETE";
     private static final String JSTypeGET = "GET";
+    private static final String JSTypePOST = "POST";
+    private static final String JSTypePUT = "PUT";
     public static final String kJSSaveToStorage = "saveToStorage";
 
     private static final String kJSSuccess = "ws_success";
@@ -139,9 +142,6 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
 
                         if (storedValue != null) {
                             try {
-                                //JSONObject storedData = new JSONObject();
-                                //storedData.put(kJSCallId, mCallId);
-
                                 storedData.put(Cobalt.kJSData, WebservicesPlugin.treatData(new JSONObject(storedValue), mProcessData, mFragment));
 
                                 cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageResult);
@@ -154,7 +154,6 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                                 }
 
                                 cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                                //cacheResultMessage.put(kJSText, JSTextUnknownError);
                                 storedData.put(kJSText, JSTextUnknownError);
                             }
                         }
@@ -162,13 +161,11 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                             if (Cobalt.DEBUG) Log.w(WebservicesPlugin.TAG, TAG + " - doInBackground: value not found in cache for key " + mStorageKey + ".");
 
                             cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                            //cacheResultMessage.put(kJSText, JSTextNotFound);
                             storedData.put(kJSText, JSTextNotFound);
                         }
                     }
                     else {
                         cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                        //cacheResultMessage.put(kJSText, JSTextUnknownError);
                         storedData.put(kJSText, JSTextUnknownError);
 
                     }
@@ -177,10 +174,10 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                     if (Cobalt.DEBUG) Log.w(WebservicesPlugin.TAG, TAG + " - doInBackground: cache is empty.");
 
                     cacheResultMessage.put(Cobalt.kJSAction, JSActionOnStorageError);
-                    //cacheResultMessage.put(kJSText, JSTextEmpty);
                     storedData.put(kJSText, JSTextEmpty);
                 }
                 cacheResultMessage.put(Cobalt.kJSData, storedData);
+
                 mFragment.sendMessage(cacheResultMessage);
             }
 
@@ -201,7 +198,7 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 builder.encodedPath(mUrl);
 
                 if (! mParams.equals("")
-                    && mType.equalsIgnoreCase(JSTypeGET)) builder.encodedQuery(mParams);
+                    && (mType.equalsIgnoreCase(JSTypeGET) || mType.equalsIgnoreCase(JSTypeDELETE))) builder.encodedQuery(mParams);
 
                 JSONObject response = new JSONObject();
                 response.put(kJSSuccess, false);
@@ -229,7 +226,7 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                         }
 
                         if (! mParams.equals("")
-                            && ! mType.equalsIgnoreCase(JSTypeGET)) {
+                            && (mType.equalsIgnoreCase(JSTypePOST) || mType.equalsIgnoreCase(JSTypePUT))) {
                             urlConnection.setDoOutput(true);
 
                             OutputStream outputStream = urlConnection.getOutputStream();
@@ -299,6 +296,7 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
         super.onPostExecute(response);
 
         if (response != null) {
+
             try {
                 JSONObject message = new JSONObject();
                 message.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
