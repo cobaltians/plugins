@@ -306,6 +306,10 @@ static WebServicesAPI *sharedApi = nil;
                             break;
                     }
                     
+                    if(errorCode == -1) {
+                        errorCode = [response statusCode];
+                    }
+                    
                     NSDictionary * dataToSendToWeb = @{ @"type" : @"plugin", @"name" : @"webservices", @"action" : @"onWSError", @"data" : @{
                                                                 @"callId" : callId,
                                                                 @"text" : responseString,
