@@ -198,7 +198,7 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                 builder.encodedPath(mUrl);
 
                 if (! mParams.equals("")
-                    && (mType.equalsIgnoreCase(JSTypeGET) || mType.equalsIgnoreCase(JSTypeDELETE))) builder.encodedQuery(mParams);
+                    && mType.equalsIgnoreCase(JSTypeGET)) builder.encodedQuery(mParams);
 
                 JSONObject response = new JSONObject();
                 response.put(kJSSuccess, false);
@@ -226,7 +226,7 @@ public final class WebservicesTask extends AsyncTask<Void, Void, JSONObject> {
                         }
 
                         if (! mParams.equals("")
-                            && (mType.equalsIgnoreCase(JSTypePOST) || mType.equalsIgnoreCase(JSTypePUT))) {
+                            && ! mType.equalsIgnoreCase(JSTypeGET)) {
                             urlConnection.setDoOutput(true);
 
                             OutputStream outputStream = urlConnection.getOutputStream();
