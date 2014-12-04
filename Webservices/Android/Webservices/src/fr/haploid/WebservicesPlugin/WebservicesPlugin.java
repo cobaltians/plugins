@@ -34,6 +34,8 @@ import fr.cobaltians.cobalt.fragments.CobaltFragment;
 import fr.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
 import fr.cobaltians.cobalt.plugin.CobaltPluginWebContainer;
 
+import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -73,7 +75,8 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
 
                     message.put(kJSCallId, time);
                     WebservicesTask wsTask = new WebservicesTask(fragment, message);
-                    wsTask.execute();
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) wsTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    else wsTask.execute();
                 }
                 catch (JSONException exception) {
                     if (Cobalt.DEBUG) {
