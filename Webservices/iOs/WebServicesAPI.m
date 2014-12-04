@@ -170,11 +170,11 @@ static WebServicesAPI *sharedApi = nil;
             
             NSMutableString * requestURL = [NSMutableString stringWithString: url];
             
-            if([type isEqualToString: @"GET"] || [type isEqualToString: @"DELETE"])
+            if([type isEqualToString: @"GET"] )
             {
                 [requestURL appendFormat: @"?%@", params];
             }
-            else if([type isEqualToString: @"POST"] || [type isEqualToString: @"PUT"])
+            else if([type isEqualToString: @"POST"] || [type isEqualToString: @"PUT"] || [type isEqualToString: @"DELETE"])
             {
                 NSData *postData = [params dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
                 [request setHTTPBody: postData];
