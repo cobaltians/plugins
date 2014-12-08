@@ -29,11 +29,27 @@
     @synchronized(self.callId)
     {
         self.callId = @([self.callId intValue] + 1);
+        
         [_viewController sendCallback: callback withData: @{ @"callId": self.callId}];
     
         [[WebServicesAPI sharedInstance] doWebServicesRequestWithData: [data objectForKey: @"data"] andViewController: viewController andCallId: self.callId];
     }
 }
 
+- (void)onMessageFromWebLayerWithCobaltController:(CobaltViewController *)viewController andData: (NSDictionary *)data
+{
+    _viewController = viewController ;
+    
+    NSString * callback = [data objectForKey:kJSCallback];
+    
+    @synchronized(self.callId)
+    {
+        self.callId = @([self.callId intValue] + 1);
+        
+        [_viewController sendCallbackToWebLayer:callback withData: @{ @"callId": self.callId}];
+        
+        [[WebServicesAPI sharedInstance] doWebServicesRequestFromWebLayerWithData: [data objectForKey: @"data"] andViewController: viewController andCallId: self.callId];
+    }
+}
 
 @end

@@ -33,6 +33,8 @@
 + (WebServicesAPI *)sharedInstance;
 
 - (void)doWebServicesRequestWithData: (NSDictionary *)data andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId;
+- (void)doWebServicesRequestFromWebLayerWithData: (NSDictionary *)data andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId;
+
 - (void)checkNetworkActivity;
 
 @end
