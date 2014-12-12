@@ -21,9 +21,7 @@
             cobalt.ws={
                 config : this.config.bind(this),
                 call : this.call.bind(this),
-                pause : this.pause.bind(this),
-                resume : this.resume.bind(this),
-                clearPausedCalls : this.clearPausedCalls.bind(this),
+                retry : this.retry.bind(this),
                 clearStorage : this.clearStorage.bind(this)
             }
             if (options){
@@ -46,23 +44,51 @@
             var self=this;
             var newCall = {
                 processData :    options.processData || this.settings.defaultParameters.processData,
-                storageKey :    ( typeof options.storageKey =="string" && options.storageKey.length ) ? options.storageKey : undefined
+                storageKey :    ( typeof options.storageKey =="string" && options.storageKey.length ) ? options.storageKey : undefined,
+                isWebLayer :    options.isWebLayer || undefined
             }
-
             if (options.url){
-                newCall.url = ((/^https?:/).test(options.url)) ? options.url : self.settings.base.url + options.url;
-                newCall.successCallback = (typeof options.successCallback =="function") ?  options.successCallback : self.settings.defaultParameters.successCallback || undefined;
-                newCall.errorCallback = (typeof options.errorCallback =="function") ?  options.errorCallback : self.settings.defaultParameters.errorCallback || undefine;
 
-                var params = cobalt.utils.extend( this.settings.base.params, options.params );
-                if (params){
-                    newCall.params = cobalt.utils.param(params);
-                }
                 newCall.type = options.type || this.settings.defaultParameters.type;
 
                 newCall.headers = cobalt.utils.extend( this.settings.defaultParameters.headers, options.headers );
                 if (! newCall.headers['User-Agent']){
                     newCall.headers['User-Agent'] = navigator.userAgent;
+                }
+
+                newCall.url = ((/^https?:/).test(options.url)) ? options.url : self.settings.base.url + options.url;
+                newCall.successCallback = (typeof options.successCallback =="function") ?  options.successCallback : self.settings.defaultParameters.successCallback || undefined;
+                newCall.errorCallback = (typeof options.errorCallback =="function") ?  options.errorCallback : self.settings.defaultParameters.errorCallback || undefined;
+
+
+                var params = cobalt.utils.extend({}, this.settings.base.params); //to avoid default modifications.
+                if (options.params){
+                    switch (typeof options.params){
+                        case "object":
+                            params = cobalt.utils.extend( params, options.params );
+                            break;
+                        case "string":
+                            cobalt.log('WS warning, params is a string so any default parameter will be ignored. Use an object to combine params with default params.')
+                            params = options.params;
+                            break;
+                        default :
+                            cobalt.log('WS warning, params should be a string or object')
+                    }
+                }
+                if (params){
+                    switch (typeof params){
+                        case "object":
+                            if ( (newCall.type=="POST" ||newCall.type=="PUT"||newCall.type=="DELETE") && ( newCall.headers && newCall.headers['Content-Type'] == "application/json")){
+                                newCall.params = JSON.stringify(params);
+                                newCall.params = (newCall.params != "{}") ? newCall.params : "";
+                            }else{
+                                newCall.params = cobalt.utils.param(params)
+                            }
+                            break;
+                        case "string":
+                            newCall.params = params;
+                            break;
+                    }
                 }
             }
 
@@ -75,7 +101,7 @@
                 }
 
                 if (newCall.cacheCallback){
-                    newCall.sendCacheResult = options.saveToStorage || this.settings.defaultParameters.saveToStorage;
+                    newCall.sendCacheResult = options.sendCacheResult || this.settings.defaultParameters.sendCacheResult;
                 }
             }
 
@@ -85,25 +111,28 @@
                 newCall.callId = data.callId;
                 self.calls[data.callId] = newCall;
             })
+        },
+        retry:function(callId, callNewData){
+            var self=this;
+            if (callId && this.calls[callId]){
+                var oldCall = this.calls[callId];
+                var newCall = callNewData;
 
+                newCall.successCallback = oldCall.successCallback;
+                newCall.errorCallback = oldCall.errorCallback;
+                newCall.cacheCallback = oldCall.cacheCallback;
+                newCall.cacheError = oldCall.cacheError;
 
-        },
-        /* abort pending calls and stack all following calls
-         *   call_ids = array of call ids.
-         *   if none, all calls are paused
-         */
-        pause:function( call_ids ){
-            self.send("pause", { call_ids : call_ids || [] })
-        },
-        /* resend aborted calls and send all stacked calls
-         *   call_ids = array of call ids.
-         *   if none, all stacked calls are resumed
-         */
-        resume:function( call_ids , options ){
-            self.send("resume", { call_ids : call_ids || [], options : options || undefined })
-        },
-        clearPausedCalls:function(){
-            self.send("clearPausedCalls")
+                self.send("call", newCall, function( data ){
+                    cobalt.log('WS call retryed with id = '+data.callId, newCall)
+                    newCall.callId = data.callId;
+                    self.calls[data.callId] = newCall;
+                });
+
+            }else{
+                cobalt.log('WS error : no callId to retry')
+            }
+
         },
         clearStorage:function(){
             self.send("clearStorage")
