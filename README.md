@@ -6,9 +6,9 @@ Repository for all Cobalt plugins. Submit yours!
 
 | Plugin | iOs | Android | BlackBerry 10 | Tizen |
 | --- | --- | --- | --- | --- |
-| [Location](https://github.com/cobaltians/plugins/tree/master/LocationPlugin) | full | full | none | none |
-| [Webservices](https://github.com/cobaltians/plugins/tree/master/WebservicesPlugin) | in progres | in progres | none | none |
-| [EasyPush](https://github.com/cobaltians/plugins/tree/master/WebservicesPlugin) | in progres | in progres | none | none |
+| [Location](https://github.com/cobaltians/plugins/tree/master/Location) | full | full | none | none |
+| [Webservices](https://github.com/cobaltians/plugins/tree/master/Webservices) | full | full | none | none |
+| [Appinfos](https://github.com/cobaltians/plugins/tree/master/Appinfos) | full | full | none | none |
 
 # How to create a plugin
 
