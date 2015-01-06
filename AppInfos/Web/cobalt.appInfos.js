@@ -22,11 +22,11 @@
          */
         getAppInfos:function(callback){
             this.send("getAppInfos", {}, function( data ){
-                cobalt.log('Received infos = ',data, typeof callback)
 				if (typeof callback == "function"){
 					callback(data);
-				}
-
+				}else{
+                    cobalt.log('Received infos = ',data, typeof callback)
+                }
             })
         },
         handleEvent:function(json){
