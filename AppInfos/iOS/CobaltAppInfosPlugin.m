@@ -25,7 +25,7 @@
     NSString * callback = [data objectForKey:kJSCallback];
     NSString * action = [data objectForKey:kJSAction];
     
-    if (action != nil && [action isEqualToString:ACTION_GET_APP_INFOS]) {
+    if (action != nil && [action isEqualToString:@"getAppInfos"]) {
         NSDictionary * appInfos = [CobaltAppInfosPlugin getAppInfos];
         
         [viewController sendCallback: callback
@@ -38,10 +38,10 @@
     if (mainBundle == nil) return @{};
     
     NSDictionary * infos = [[NSBundle mainBundle] infoDictionary];
-    NSString * version = [infos objectForKey:VERSION];
-    NSString * build = [infos objectForKey:BUILD];
+    NSString * version = [infos objectForKey:@"CFBundleShortVersionString"];
+    NSString * build = [infos objectForKey:@"CFBundleVersion"];
     
-    return @{VERSION_NAME: version, VERSION_CODE: build};
+    return @{@"versionName": version, @"versionCode": build};
 }
 
 @end

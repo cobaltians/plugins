@@ -7,15 +7,6 @@
 //
 
 #import "CobaltAbstractPlugin.h"
-#import "WebServicesAPI.h"
-
-#define ACTION_GET_APP_INFOS   @"getAppInfos"
-
-#define VERSION_CODE    @"versionCode"
-#define BUILD           @"CFBundleVersion"
-
-#define VERSION_NAME    @"versionName"
-#define VERSION         @"CFBundleShortVersionString"
 
 @interface CobaltAppInfosPlugin: CobaltAbstractPlugin
 
