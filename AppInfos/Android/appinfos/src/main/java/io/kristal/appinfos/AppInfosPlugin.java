@@ -1,11 +1,11 @@
 /**
  *
- * WebservicesPlugin
- * WebservicesPlugin
+ * AppInfosPlugin
+ * AppInfos
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Haploid
+ * Copyright (c) 2014 Kristal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,39 +27,40 @@
  *
  */
 
-package fr.haploid.WebservicesPlugin;
+package io.kristal.appinfos;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.util.Log;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
 import fr.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
 import fr.cobaltians.cobalt.plugin.CobaltPluginWebContainer;
-
-import android.os.AsyncTask;
-import android.os.Build;
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public final class WebservicesPlugin extends CobaltAbstractPlugin {
+public class AppInfosPlugin extends CobaltAbstractPlugin {
 
-    protected static final String TAG = WebservicesPlugin.class.getSimpleName();
+    protected final static String TAG = AppInfosPlugin.class.getSimpleName();
 
-    private static final String kJSCallId = "callId";
-    private static final String JSActionCall = "call";
+    private static final String GET_APP_INFOS = "getAppInfos";
+    private static final String VERSION_NAME = "versionName";
+    private static final String VERSION_CODE = "versionCode";
+
 
     /*******************************************************************************************************
      * MEMBERS
      *******************************************************************************************************/
 
-    protected static WebservicesPlugin sInstance;
+    protected static AppInfosPlugin sInstance;
 
     /**************************************************************************************
      * CONSTRUCTORS
      **************************************************************************************/
 
     public static CobaltAbstractPlugin getInstance(CobaltPluginWebContainer webContainer) {
-        if (sInstance == null) sInstance = new WebservicesPlugin();
+        if (sInstance == null) sInstance = new AppInfosPlugin();
         sInstance.addWebContainer(webContainer);
         return sInstance;
     }
@@ -67,27 +68,22 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
     @Override
     public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
         try {
-
             String action = message.getString(Cobalt.kJSAction);
 
-            if (action.equals(JSActionCall)) {
+            if (action.equals(GET_APP_INFOS)){
                 CobaltFragment fragment = webContainer.getFragment();
-                long time = System.currentTimeMillis();
-
+                Context ctx = webContainer.getActivity();
                 try {
+                    PackageInfo packageInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
                     JSONObject data = new JSONObject();
-                    data.put(kJSCallId, time);
-                    fragment.sendCallback(message.getString(Cobalt.kJSCallback), data);
-
-                    message.put(kJSCallId, time);
-                    WebservicesTask wsTask = new WebservicesTask(fragment, message);
-                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) wsTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    else wsTask.execute();
+                    data.put(VERSION_NAME, packageInfo.versionName);
+                    data.put(VERSION_CODE, packageInfo.versionCode);
+                    fragment.sendCallback(message.getString(Cobalt.kJSCallback),data);
                 }
-                catch (JSONException exception) {
+                catch (PackageManager.NameNotFoundException e) {
                     if (Cobalt.DEBUG) {
-                        Log.e(TAG, "onMessage: missing callback key in message " + message.toString() + ".");
-                        exception.printStackTrace();
+                        Log.e(TAG, "onMessage: Package Name not found " + message.toString() + ".");
+                        e.printStackTrace();
                     }
                 }
             }
@@ -99,33 +95,5 @@ public final class WebservicesPlugin extends CobaltAbstractPlugin {
                 exception.printStackTrace();
             }
         }
-    }
-
-    public static JSONObject treatData(JSONObject data, JSONObject process, CobaltFragment fragment) {
-        if (process != null
-            && WebservicesInterface.class.isAssignableFrom(fragment.getClass())) {
-            return ((WebservicesInterface) fragment).treatData(data, process);
-        }
-        else return data;
-    }
-
-    public static boolean handleError(JSONObject call, JSONObject response, CobaltFragment fragment) {
-        return ! WebservicesInterface.class.isAssignableFrom(fragment.getClass()) || ((WebservicesInterface) fragment).handleError(call, response);
-    }
-
-    public static void storeValue(String key, String value, CobaltFragment fragment) {
-        if (WebservicesInterface.class.isAssignableFrom(fragment.getClass())
-            && ! ((WebservicesInterface) fragment).storeValue(value, key)) {
-            WebservicesData.setItem(value, key);
-        }
-    }
-
-    public static String storedValueForKey(String key, CobaltFragment fragment) {
-        if (WebservicesInterface.class.isAssignableFrom(fragment.getClass())) {
-            String storedValue = ((WebservicesInterface) fragment).storedValueForKey(key);
-            if (storedValue != null) return storedValue;
-        }
-
-        return WebservicesData.getString(key);
     }
 }
