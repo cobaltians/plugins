@@ -246,7 +246,10 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
                         }
 
                         try {
-                            InputStream inputStream = urlConnection.getInputStream();
+                            InputStream inputStream;
+                            if (responseCode >= 400 && responseCode < 600) inputStream = urlConnection.getErrorStream();
+                            else inputStream = urlConnection.getInputStream();
+                            
                             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                             StringBuffer buffer = new StringBuffer();
                             String line;
@@ -254,7 +257,6 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
                             while ((line = reader.readLine()) != null) {
                                 buffer.append(line).append("\n");
                             }
-
                             if (buffer.length() != 0) response.put(kJSText, buffer.toString());
                         }
                         catch (IOException exception) {
@@ -273,7 +275,6 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
                     catch (IOException exception) {
                         exception.printStackTrace();
                     }
-
                     return response;
                 }
                 catch (MalformedURLException exception) {
@@ -294,7 +295,6 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
     @Override
     protected void onPostExecute(JSONObject response) {
         super.onPostExecute(response);
-
         if (response != null) {
 
             try {
@@ -310,7 +310,6 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
 
                 int statusCode = response.optInt(kJSStatusCode, -1);
                 if (statusCode != -1) data.put(kJSStatusCode, statusCode);
-
                 String text = response.optString(kJSText, null);
                 if (text != null) {
                     try {
