@@ -1,11 +1,11 @@
 /**
  *
  * LocationPlugin
- * LocationPlugin
+ * Location
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Haploid
+ * Copyright (c) 2014 Kristal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,9 @@
  *
  */
 
-package fr.haploid.LocationPlugin;
+package io.kristal.locationplugin;
 
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Intent;
 import android.location.LocationListener;
-import android.os.Build;
 import android.os.Bundle;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
@@ -42,7 +38,6 @@ import fr.cobaltians.cobalt.plugin.CobaltPluginWebContainer;
 
 import android.app.Activity;
 import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
@@ -50,9 +45,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * @author Sébastien Famel
- */
+
 public final class LocationPlugin extends CobaltAbstractPlugin implements LocationListener {
 
     // TAG
@@ -91,6 +84,11 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
     private boolean getAltitude = false;
     private boolean getAccuracy = false;
 
+    /*******************************************************************************************************
+     * MEMBERS
+     *******************************************************************************************************/
+
+    protected static LocationPlugin sInstance;
 
     /**************************************************************************************
      * CONSTRUCTORS
@@ -118,7 +116,7 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
         Location location = getLocation(webContainer);
 
         boolean catchAction = false;
-        
+
         try {
             String action = message.getString(Cobalt.kJSAction);
 
@@ -128,7 +126,7 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
                     action.equals(GET_ALTITUDE) ||
                     action.equals(GET_ACCURACY)) {
 
-            	catchAction = true;
+                catchAction = true;
 
                 // no callback cause call sendMessage now
                 //String callback = message.getString(Cobalt.kJSCallback);
@@ -186,14 +184,14 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
                     mFragment.sendMessage(resultLocation);
                 }
 
-                if (!catchAction) 
-                	if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
+                if (!catchAction)
+                    if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
             }
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {
-            	if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't find a good key in : " + message.toString());
-            	exception.printStackTrace();
+                if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't find a good key in : " + message.toString());
+                exception.printStackTrace();
             }
         }
     }
