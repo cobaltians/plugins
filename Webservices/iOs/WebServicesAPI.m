@@ -79,6 +79,7 @@ static WebServicesAPI *sharedApi = nil;
         @autoreleasepool
         {
             NSString * url = [dataToCreateRequest objectForKey: @"url"];
+			NSNumber *timeout = [dataToCreateRequest objectForKey:@"timeout"];
             NSString * type = [dataToCreateRequest objectForKey: @"type"];
             NSString * params = [dataToCreateRequest objectForKey: @"params"];
             NSNumber * saveToStorage = [dataToCreateRequest objectForKey: @"saveToStorage"];
@@ -184,8 +185,10 @@ static WebServicesAPI *sharedApi = nil;
                 return;
             }
             
+			[request setURL: [NSURL URLWithString: requestURL]];
             [request setHTTPMethod: type];
-            [request setURL: [NSURL URLWithString: requestURL]];
+			
+			if (timeout != nil) [request setTimeoutInterval:floor([timeout intValue] / 1000)];
             
             for (NSString* key in HTTPHeaders) {
                 NSString * value = [HTTPHeaders objectForKey:key];
@@ -338,6 +341,7 @@ static WebServicesAPI *sharedApi = nil;
          @autoreleasepool
          {
              NSString * url = [dataToCreateRequest objectForKey: @"url"];
+			 NSNumber *timeout = [dataToCreateRequest objectForKey:@"timeout"];
              NSString * type = [dataToCreateRequest objectForKey: @"type"];
              NSString * params = [dataToCreateRequest objectForKey: @"params"];
              NSNumber * saveToStorage = [dataToCreateRequest objectForKey: @"saveToStorage"];
@@ -443,8 +447,10 @@ static WebServicesAPI *sharedApi = nil;
                  return;
              }
              
+			 [request setURL: [NSURL URLWithString: requestURL]];
              [request setHTTPMethod: type];
-             [request setURL: [NSURL URLWithString: requestURL]];
+			 
+			 if (timeout != nil) [request setTimeoutInterval:floor([timeout intValue] / 1000)];
              
              for (NSString* key in HTTPHeaders) {
                  NSString * value = [HTTPHeaders objectForKey:key];

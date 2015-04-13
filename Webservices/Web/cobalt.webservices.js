@@ -49,6 +49,10 @@
             }
             if (options.url){
 
+                if (options.timeout && typeof options.timeout == "number") {
+                    newCall.timeout = options.timeout;
+                }
+				
                 newCall.type = options.type || this.settings.defaultParameters.type;
 
                 newCall.headers = cobalt.utils.extend( this.settings.defaultParameters.headers, options.headers );

@@ -56,6 +56,7 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
     public static final String kJSUrl = "url";
     public static final String kJSHeaders = "headers";
     public static final String kJSParams = "params";
+	public static final String kJSTimeout = "timeout";
     public static final String kJSType = "type";
     private static final String JSTypeDELETE = "DELETE";
     private static final String JSTypeGET = "GET";
@@ -85,6 +86,7 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
     private String mUrl;
     private JSONObject mHeaders;
     private String mParams;
+	private int mTimeout;
     private String mType;
     private boolean mSaveToStorage;
 
@@ -101,6 +103,7 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
             if (mUrl != null) {
                 mHeaders = data.optJSONObject(kJSHeaders);
                 mParams = data.optString(kJSParams);
+				mTimeout = data.optInt(kJSTimeout, -1);
                 mType = data.getString(kJSType);
                 mSaveToStorage = data.optBoolean(kJSSaveToStorage);
             }
@@ -208,7 +211,7 @@ public final class WebServicesTask extends AsyncTask<Void, Void, JSONObject> {
 
                     try {
                         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                        // TODO: set timeouts?
+						if (mTimeout > 0) urlConnection.setConnectTimeout(mTimeout);
                         urlConnection.setRequestMethod(mType);
                         urlConnection.setDoInput(true);
 
