@@ -193,7 +193,7 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
                 if (mAltitude)
                     value.put(ALTITUDE, location.getAltitude());
                 if (mAccuracy)
-                    value.put(ALTITUDE, location.getAccuracy());
+                    value.put(ACCURACY, location.getAccuracy());
 
                 data.put(Cobalt.kJSValue, value);
                 resultLocation.put(Cobalt.kJSData, data);
