@@ -78,11 +78,11 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
     private String mProvider;
     private CobaltFragment mFragment;
 
-    private boolean getLocation = false;
-    private boolean getLongitude = false;
-    private boolean getLatitude = false;
-    private boolean getAltitude = false;
-    private boolean getAccuracy = false;
+    private boolean mLocation = false;
+    private boolean mLongitude = false;
+    private boolean mLatitude = false;
+    private boolean mAltitude = false;
+    private boolean mAccuracy = false;
 
     /*******************************************************************************************************
      * MEMBERS
@@ -112,63 +112,16 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
     @Override
     public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
         mFragment = webContainer.getFragment();
-
         Location location = getLocation(webContainer);
-
-        boolean catchAction = false;
-
         try {
             String action = message.getString(Cobalt.kJSAction);
-
-            if (action.equals(GET_LOCATION) ||
-                    action.equals(GET_LONGITUDE) ||
-                    action.equals(GET_LATITUDE) ||
-                    action.equals(GET_ALTITUDE) ||
-                    action.equals(GET_ACCURACY)) {
-
-                catchAction = true;
-
-                // no callback cause call sendMessage now
-                //String callback = message.getString(Cobalt.kJSCallback);
-                JSONObject resultLocation = new JSONObject();
-                resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
-                resultLocation.put(Cobalt.kJSPluginName, LOCATION);
-                JSONObject data = new JSONObject();
-
-                if (location != null) {
-                    data.put(ERROR, false);
-                    JSONObject value = new JSONObject();
-                    if (action.equals(GET_LOCATION) ||
-                            action.equals(GET_LONGITUDE)) {
-                        getLongitude = true;
-                        getLocation = true;
-                        value.put(LONGITUDE, location.getLongitude());
-                    }
-
-                    if (action.equals(GET_LOCATION) ||
-                            action.equals(GET_LATITUDE)) {
-                        getLatitude = true;
-                        getLocation = true;
-                        value.put(LATITUDE, location.getLatitude());
-                    }
-
-                    if (action.equals(GET_ALTITUDE)) {
-                        value.put(ALTITUDE, location.getAltitude());
-                        getAltitude = true;
-                    }
-
-                    if (action.equals(GET_ACCURACY)) {
-                        value.put(ACCURACY, location.getAccuracy());
-                        getAccuracy = true;
-                    }
-
-                    //resultLocation.put(CALLBACK, callback);
-                    data.put(Cobalt.kJSValue, value);
-                    resultLocation.put(Cobalt.kJSData, data);
-                    mFragment.sendMessage(resultLocation);
-                }
-
+            if (selectionOfAction(action)) {
+                if (location != null) sendLocationFound(location);
                 else {
+                    JSONObject resultLocation = new JSONObject();
+                    resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
+                    resultLocation.put(Cobalt.kJSPluginName, LOCATION);
+                    JSONObject data = new JSONObject();
                     data.put(ERROR, true);
                     if (mFoundProvider) {
                         data.put(CODE, NULL);
@@ -183,10 +136,9 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
                     resultLocation.put(Cobalt.kJSData, data);
                     mFragment.sendMessage(resultLocation);
                 }
-
-                if (!catchAction)
-                    if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
             }
+            else
+                if (Cobalt.DEBUG) Log.d(TAG, "ERROR - can't found action in message : " + message.toString());
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {
@@ -196,28 +148,37 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
         }
     }
 
+    private boolean selectionOfAction(String action) {
+        if (action.equals(GET_LOCATION)) mLocation = true;
+        else if (action.equals(GET_LONGITUDE)) mLongitude = true;
+        else if (action.equals(GET_LATITUDE)) mLatitude = true;
+        else if (action.equals(GET_ALTITUDE)) mAltitude = true;
+        else if (action.equals(GET_ACCURACY)) mAccuracy = true;
+        else return false;
+        return true;
+    }
+
     private Location getLocation(CobaltPluginWebContainer webContainer) {
-        Activity activity = webContainer.getActivity();
-
-        mLocationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-        if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) mProvider = LocationManager.GPS_PROVIDER;
-
-        else if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) mProvider = LocationManager.NETWORK_PROVIDER;
-
-        else {
+        mProvider = getLocationProvider(webContainer);
+        if (mProvider == null) {
             mFoundProvider = false;
             return null;
         }
-        Location location = mLocationManager.getLastKnownLocation(mProvider);
-
-        return location;
+        else {
+            Location location = mLocationManager.getLastKnownLocation(mProvider);
+            mFoundProvider = true;
+            return location;
+        }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged");
+    private String getLocationProvider(CobaltPluginWebContainer webContainer) {
+        Activity activity = webContainer.getActivity();
+        mLocationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        return mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ? LocationManager.GPS_PROVIDER : (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ? LocationManager.NETWORK_PROVIDER : null);
+    }
+
+    private void sendLocationFound (Location location) {
         if (location != null) {
-            Log.d(TAG, "location values = "+location.getLongitude() + " / "+ location.getLatitude());
             JSONObject resultLocation = new JSONObject();
             try {
                 resultLocation.put(Cobalt.kJSType, Cobalt.JSTypePlugin);
@@ -225,25 +186,28 @@ public final class LocationPlugin extends CobaltAbstractPlugin implements Locati
                 JSONObject data = new JSONObject();
                 data.put(ERROR, false);
                 JSONObject value = new JSONObject();
-                if (getLocation || getLongitude)
+                if (mLocation || mLongitude)
                     value.put(LONGITUDE, location.getLongitude());
-                if (getLocation || getLatitude)
+                if (mLocation || mLatitude)
                     value.put(LATITUDE, location.getLatitude());
-                if (getAltitude)
+                if (mAltitude)
                     value.put(ALTITUDE, location.getAltitude());
-                if (getAccuracy)
+                if (mAccuracy)
                     value.put(ALTITUDE, location.getAccuracy());
 
                 data.put(Cobalt.kJSValue, value);
                 resultLocation.put(Cobalt.kJSData, data);
-                Log.d(TAG, "send new position to web with location = "+resultLocation.toString());
-
                 mFragment.sendMessage(resultLocation);
-                mLocationManager.removeUpdates(this);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        sendLocationFound(location);
+        mLocationManager.removeUpdates(this);
     }
 
     @Override
