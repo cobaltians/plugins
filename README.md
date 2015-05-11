@@ -4,11 +4,11 @@ Repository for all Cobalt plugins. Submit yours!
 
 # Stable plugins list
 
-| Plugin | iOs | Android | BlackBerry 10 | Tizen |
-| --- | --- | --- | --- | --- |
-| [Location](https://github.com/cobaltians/plugins/tree/master/Location) | full | full | none | none |
-| [Webservices](https://github.com/cobaltians/plugins/tree/master/Webservices) | full | full | none | none |
-| [Appinfos](https://github.com/cobaltians/plugins/tree/master/Appinfos) | full | full | none | none |
+| Plugin | iOs | Android |
+| --- | --- | --- |
+| [Location](https://github.com/cobaltians/plugins/tree/master/Location) | full | full |
+| [Webservices](https://github.com/cobaltians/plugins/tree/master/Webservices) | full | full |
+| [AppInfos](https://github.com/cobaltians/plugins/tree/master/AppInfos) | full | full |
 
 # How to create a plugin
 
