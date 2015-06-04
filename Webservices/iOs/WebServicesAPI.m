@@ -304,7 +304,9 @@ static WebServicesAPI *sharedApi = nil;
                         case kCFURLErrorBadServerResponse:
                             errorCode = 406;
                             break;
-                            
+                        case kCFURLErrorTimedOut:
+                            errorCode = 408;
+                            break;
                         default:
                             break;
                     }
