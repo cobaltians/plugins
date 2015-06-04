@@ -188,7 +188,7 @@ static WebServicesAPI *sharedApi = nil;
 			[request setURL: [NSURL URLWithString: requestURL]];
             [request setHTTPMethod: type];
 			
-			if (timeout != nil) [request setTimeoutInterval:floor([timeout intValue] / 1000)];
+			if (timeout != nil) [request setTimeoutInterval:[timeout intValue] / 1000.0];
             
             for (NSString* key in HTTPHeaders) {
                 NSString * value = [HTTPHeaders objectForKey:key];
