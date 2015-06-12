@@ -2,22 +2,22 @@
 
 Repository for all Cobalt plugins. Submit yours!
 
-# Stable plugins list
+# Current plugins list
 
-| Plugin | iOs | Android |
-| --- | --- | --- |
-| [Location](https://github.com/cobaltians/plugins/tree/master/Location) | full | full |
-| [Webservices](https://github.com/cobaltians/plugins/tree/master/Webservices) | full | full |
-| [AppInfos](https://github.com/cobaltians/plugins/tree/master/AppInfos) | full | full |
+* [Webservices](https://github.com/cobaltians/plugins/tree/master/Webservices) - call WebServices on the native side and use a native cache
+* [PubSub](https://github.com/cobaltians/plugins/tree/master/PubSub) - send messages between WebViews 
+* [Location](https://github.com/cobaltians/plugins/tree/master/Location) - very basic geolocataion plugin
+* [AppInfos](https://github.com/cobaltians/plugins/tree/master/AppInfos) - app version name and version code
 
-# How to create a plugin
+# How to
 
-* [Read the doc](https://github.com/cobaltians/cobalt/wiki/Creating-plugins),
+* [Add plugin to my project](https://github.com/cobaltians/cobalt/wiki/Using-plugins),
+* [Create my own plugin](https://github.com/cobaltians/cobalt/wiki/Creating-plugins),
 * Ask for help if needed.
 
 # Plugins planned by Cobalt team
 
-* Add cross-WebView notification plugin,
+* Add actionPicker
 * Add photo picker plugin (from camera & gallery),
 * Add slideshow plugin,
 * Add video player plugin,
@@ -25,4 +25,4 @@ Repository for all Cobalt plugins. Submit yours!
 * Add side menu plugin,
 * Add fullscreen image with zoom plugin,
 * Add device informations plugin.
-* Add actionPicker
+
