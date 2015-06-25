@@ -73,7 +73,6 @@ static WebServicesAPI *sharedApi = nil;
  */
 - (void)doWebServicesRequestWithData: (NSDictionary *)dataToCreateRequest andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId
 {
-    __unsafe_unretained WebServicesAPI * wsAPI = self;
     [queue addOperationWithBlock:^
     {
         @autoreleasepool
@@ -99,7 +98,7 @@ static WebServicesAPI *sharedApi = nil;
                 }
                 else
                 {
-                    storedValue = [wsAPI storedValueForKey: storageKey];
+                    storedValue = [self storedValueForKey: storageKey];
                 }
                 
                 if(storedValue)
@@ -201,11 +200,11 @@ static WebServicesAPI *sharedApi = nil;
             NSError * errorHttp = nil;
             NSHTTPURLResponse * response;
             
-            wsAPI.nbRequete++;
-            [wsAPI checkNetworkActivity];
+            self.nbRequete++;
+            [self checkNetworkActivity];
             NSData * requestData = [NSURLConnection sendSynchronousRequest: request returningResponse: &response error: &errorHttp];
-            wsAPI.nbRequete--;
-            [wsAPI checkNetworkActivity];
+            self.nbRequete--;
+            [self checkNetworkActivity];
             
             __block NSString *responseString = [[NSString alloc] initWithData: requestData encoding:NSUTF8StringEncoding];
             
@@ -281,7 +280,7 @@ static WebServicesAPI *sharedApi = nil;
                         }
                         else
                         {
-                            [wsAPI storeValue: responseString forKey: storageKey];
+                            [self storeValue: responseString forKey: storageKey];
                         }
                     }
                 } waitUntilDone: NO];
@@ -336,8 +335,6 @@ static WebServicesAPI *sharedApi = nil;
 }
 
 - (void)doWebServicesRequestFromWebLayerWithData: (NSDictionary *)dataToCreateRequest andViewController: (CobaltViewController *)viewController andCallId: (NSNumber *)callId {
-
-    __unsafe_unretained WebServicesAPI * wsAPI = self;
     [queue addOperationWithBlock:^
      {
          @autoreleasepool
@@ -363,7 +360,7 @@ static WebServicesAPI *sharedApi = nil;
                  }
                  else
                  {
-                     storedValue = [wsAPI storedValueForKey: storageKey];
+                     storedValue = [self storedValueForKey: storageKey];
                  }
                  
                  if(storedValue)
@@ -465,11 +462,11 @@ static WebServicesAPI *sharedApi = nil;
              NSError * errorHttp = nil;
              NSHTTPURLResponse * response;
              
-             wsAPI.nbRequete++;
-             [wsAPI checkNetworkActivity];
+             self.nbRequete++;
+             [self checkNetworkActivity];
              NSData * requestData = [NSURLConnection sendSynchronousRequest: request returningResponse: &response error: &errorHttp];
-             wsAPI.nbRequete--;
-             [wsAPI checkNetworkActivity];
+             self.nbRequete--;
+             [self checkNetworkActivity];
              
              __block NSString *responseString = [[NSString alloc] initWithData: requestData encoding:NSUTF8StringEncoding];
              
@@ -545,7 +542,7 @@ static WebServicesAPI *sharedApi = nil;
                           }
                           else
                           {
-                              [wsAPI storeValue: responseString forKey: storageKey];
+                              [self storeValue: responseString forKey: storageKey];
                           }
                       }
                   } waitUntilDone: NO];
