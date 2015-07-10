@@ -25,9 +25,3 @@ use the cobalt.actionPicker shortcut like this
 function(data) allow you to do stuff when you click on an action.
 
 ("Chose a picture"= {"index":0};"Take a picture"= {"index":1};"Take a video"= {"index":2}).
-
-
-ToDo
-----------------
-
-iOS Version.
