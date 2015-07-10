@@ -14,14 +14,18 @@ How to use
 use the cobalt.actionPicker shortcut like this
 
     cobalt.actionPicker({
-        text : "What you want to do?", // ios only
-        actions : [ "Chose a picture", "Take a picture", "Take a video" ],
-        cancel : "Cancel", // ios only
+        text : "What you want to do?", // ios only (the title of this picker)
+        actions : [ "Chose a picture", "Take a picture", "Take a video" ], // the list of action
+        cancel : "Cancel", // ios only (name of cancel button)
     },function(data){
         cobalt.log('picker callback', data)
         document.getElementById('choiceField').innerHTML = "Choice n°"+JSON.stringify(data.index);
+        
+        if(data.index==1) { //do some stuff }
     });
 
 function(data) allow you to do stuff when you click on an action.
 
 ("Chose a picture"= {"index":0};"Take a picture"= {"index":1};"Take a video"= {"index":2}).
+
+Action Picker plugin doesn't have to be init in cobalt.init in your HTML page.
