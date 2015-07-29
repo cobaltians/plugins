@@ -31,7 +31,7 @@ Publish a give message in the specified channel.
        anotherValue : "foo"
     });
 
-If the channel does not exist, it creates it.
+If the channel does not exist, it does nothing.
 
 ### cobalt.subscribe
 
