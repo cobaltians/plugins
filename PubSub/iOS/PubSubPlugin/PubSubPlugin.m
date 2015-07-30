@@ -39,11 +39,14 @@
 - (void)onMessageWithCobaltController:(CobaltViewController *)viewController
                               andData:(NSDictionary *)data {
     id action = [data objectForKey:@"action"];
-    id channel = [data objectForKey:@"channel"];
-    id message = [data objectForKey:@"message"];
-    id callback = [data objectForKey:@"callback"];
-    
     NSAssert(action && [action isKindOfClass:[NSString class]], @"Missing action field or not a string...");
+    
+    id innerData = [data objectForKey:@"data"];
+    NSAssert(innerData && [innerData isKindOfClass:[NSDictionary class]], @"Missing data field or not a object...");
+    
+    id channel = [innerData objectForKey:@"channel"];
+    id message = [innerData objectForKey:@"message"];
+    id callback = [innerData objectForKey:@"callback"];
     NSAssert(channel && [channel isKindOfClass:[NSString class]], @"Subscribe - Missing channel field or not a string...");
     
     if ([action isEqualToString:@"publish"]) {
