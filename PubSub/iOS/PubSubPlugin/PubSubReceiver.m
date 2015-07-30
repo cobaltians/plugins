@@ -38,25 +38,35 @@
                            forKey:channel];
 }
 
-- (BOOL)unsubscribeFromChannel:(NSString *)channel {
+- (void)unsubscribeFromChannel:(NSString *)channel {
     NSAssert(channel, @"Cannot unsubscribe from a nil channel.");
     
     [callbackForChannel removeObjectForKey:channel];
     
-    return ! callbackForChannel.count;
+    if (! callbackForChannel.count
+        && _delegate) {
+        [_delegate receiverReadyForRemove:self];
+    }
 }
 
 - (void)receiveMessage:(NSDictionary *)message
             forChannel:(NSString *)channel {
-    // TODO: replace this assert with a nil check and re-order instructions
-    NSAssert(_viewController, @"viewController is not initialized. \
-             Use initWithViewController: or initWithViewController:andCallback:forChannel: methods to instantiate a PubSubReceiver.");
+    if (! _viewController) {
+        NSLog(@"PubSubReceiver receiveMessage:forChannel: - viewController is nil. \
+              It may be caused by its deallocation or the PubSubReceiver was not correctly initialized... \
+              Please check if the PubSubReceiver has been initialized with initWithViewController: or initWithViewController:andCallback:forChannel: methods.");
+    
+        if (_delegate) {
+            [_delegate receiverReadyForRemove:self];
+            return;
+        }
+    }
+
     NSAssert(channel, @"Cannot send message to nil channel");
     
     NSString *callback = [callbackForChannel objectForKey:channel];
-    
     if (! callback) {
-        NSLog(@"PubSubReceiver receiveMessage:forChannel: - %@ has not subscribed to %@ channel or has already unsubscribe.", [_viewController class], channel);
+        NSLog(@"PubSubReceiver receiveMessage:forChannel: - %@ has not subscribed to %@ channel yet or has already unsubscribed.", [_viewController class], channel);
         return;
     }
     

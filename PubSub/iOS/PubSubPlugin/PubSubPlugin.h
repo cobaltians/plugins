@@ -8,8 +8,10 @@
 
 #import "CobaltAbstractPlugin.h"
 
-@interface PubSubPlugin : CobaltAbstractPlugin {
-    NSMutableDictionary * receiversForChannel;
+#import "PubSubReceiver.h"
+
+@interface PubSubPlugin : CobaltAbstractPlugin <PubSubReceiverDelegate> {
+    NSMutableArray *receivers;
 }
 
 @end
