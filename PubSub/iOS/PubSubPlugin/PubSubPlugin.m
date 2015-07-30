@@ -121,7 +121,23 @@
 
 - (void)unsubscribeViewController:(CobaltViewController *)viewController
                       FromChannel:(NSString *)channel {
-    // TODO: implement
+    NSMutableArray *receivers = [receiversForChannel objectForKey:channel];
+    
+    if (receivers) {
+        __block PubSubReceiver *receiver;
+        
+        [receivers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([viewController isEqual:[(PubSubReceiver *)obj viewController]]) {
+                receiver = obj;
+                *stop = YES;
+            }
+        }];
+        
+        if (receiver
+            && [receiver unsubscribeFromChannel:channel]) {
+            [receivers removeObject:receiver];
+        }
+    }
 }
 
 @end
