@@ -10,20 +10,20 @@
 
 @implementation PubSubReceiver
 
-- (id)initWithViewController:(CobaltViewController *)vc {
+- (id)initWithViewController:(CobaltViewController *)viewController {
     if (self = [super init]) {
-        viewController = vc;
+        _viewController = viewController;
         callbackForChannel = [NSMutableDictionary dictionary];
     }
     
     return self;
 }
 
-- (id)initWithViewController:(CobaltViewController *)vc
+- (id)initWithViewController:(CobaltViewController *)viewController
                  andCallback:(NSString *)callback
                   forChannel:(NSString *)channel {
     if (self = [super init]) {
-        viewController = vc;
+        _viewController = viewController;
         callbackForChannel = [NSMutableDictionary dictionaryWithDictionary:@{channel: callback}];
     }
     
@@ -48,18 +48,19 @@
 
 - (void)receiveMessage:(NSDictionary *)message
             forChannel:(NSString *)channel {
-    NSAssert(viewController, @"viewController is not initialized. \
+    // TODO: replace this assert with a nil check and re-order instructions
+    NSAssert(_viewController, @"viewController is not initialized. \
              Use initWithViewController: or initWithViewController:andCallback:forChannel: methods to instantiate a PubSubReceiver.");
     NSAssert(channel, @"Cannot send message to nil channel");
     
     NSString *callback = [callbackForChannel objectForKey:channel];
     
     if (! callback) {
-        NSLog(@"PubSubReceiver receiveMessage:forChannel: - %@ has not subscribed to %@ channel or has already unsubscribe.", [viewController class], channel);
+        NSLog(@"PubSubReceiver receiveMessage:forChannel: - %@ has not subscribed to %@ channel or has already unsubscribe.", [_viewController class], channel);
         return;
     }
     
-    [viewController sendCallback:callback
+    [_viewController sendCallback:callback
                         withData:message];
 }
 

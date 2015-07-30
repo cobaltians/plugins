@@ -8,11 +8,13 @@
 
 #import "PubSubPlugin.h"
 
+#import "PubSubReceiver.h"
+
 @implementation PubSubPlugin
 
 - (id)init {
     if (self = [super init]) {
-        viewControllersForChannel = [NSMutableDictionary dictionary];
+        receiversForChannel = [NSMutableDictionary dictionary];
     }
     
     return self;
@@ -67,13 +69,51 @@
 
 - (void)publishMessage:(NSDictionary *)message
              toChannel:(NSString *)channel {
-    // TODO: implement
+    NSArray *receivers = [receiversForChannel objectForKey:channel];
+    
+    if (! receivers) {
+        NSLog(@"PubSubPlugin publishMessage:toChannel: - No receiver has already subscribed to %@ channel or they all have already unsubscribe.", channel);
+        return;
+    }
+    
+    [receivers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [(PubSubReceiver *)obj receiveMessage:message
+                                   forChannel:channel];
+    }];
 }
 
 - (void)subscribeViewController:(CobaltViewController *)viewController
                       toChannel:(NSString *)channel
                    withCallback:(NSString *)callback {
-    // TODO: implement
+    NSMutableArray *receivers = [receiversForChannel objectForKey:channel];
+    __block PubSubReceiver *receiver;
+    
+    if (receivers) {
+        [receivers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([viewController isEqual:[(PubSubReceiver *)obj viewController]]) {
+                receiver = obj;
+                *stop = YES;
+            }
+        }];
+        
+        if (receiver) {
+            [receiver subscribeToChannel:channel
+                            withCallback:callback];
+        }
+        else {
+            receiver = [[PubSubReceiver alloc] initWithViewController:viewController
+                                                          andCallback:callback
+                                                           forChannel:channel];
+            [receivers addObject:receiver];
+        }
+    }
+    else {
+        receiver = [[PubSubReceiver alloc] initWithViewController:viewController
+                                                      andCallback:callback
+                                                       forChannel:channel];
+        receivers = [NSMutableArray arrayWithObject:receiver];
+        [receiversForChannel setObject:receivers forKey:channel];
+    }
 }
 
 - (void)unsubscribeViewController:(CobaltViewController *)viewController

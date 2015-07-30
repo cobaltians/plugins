@@ -11,9 +11,10 @@
 #import "CobaltViewController.h"
 
 @interface PubSubReceiver : NSObject {
-    CobaltViewController *viewController;
-    NSMutableDictionary * callbackForChannel;
+    NSMutableDictionary *callbackForChannel;
 }
+
+@property (weak, nonatomic, readonly) CobaltViewController *viewController;
 
 - (id)initWithViewController:(CobaltViewController *)viewController;
 - (id)initWithViewController:(CobaltViewController *)viewController

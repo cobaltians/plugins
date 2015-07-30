@@ -9,7 +9,7 @@
 #import "CobaltAbstractPlugin.h"
 
 @interface PubSubPlugin : CobaltAbstractPlugin {
-    NSMutableDictionary * viewControllersForChannel;
+    NSMutableDictionary * receiversForChannel;
 }
 
 @end
