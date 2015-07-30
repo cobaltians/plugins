@@ -10,6 +10,12 @@
 
 @implementation PubSubPlugin
 
+////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark INIT -
+
+////////////////////////////////////////////////////////////////////////////////////////
+
 - (id)init {
     if (self = [super init]) {
         receivers = [NSMutableArray array];
@@ -20,7 +26,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#pragma mark - COBALT
+#pragma mark COBALT -
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +40,9 @@
     [self onMessageWithCobaltController:viewController andData:data];
 }
 
+/**
+ * @discussion Regroups onMessageFromCobaltController:andData: and onMessageFromWebLayerWithCobaltController:andData: methods in one
+ */
 - (void)onMessageWithCobaltController:(CobaltViewController *)viewController
                               andData:(NSDictionary *)data {
     id action = [data objectForKey:@"action"];
@@ -64,10 +73,15 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#pragma mark - HELPERS
+#pragma mark HELPERS -
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @discussion Broadcasts the specified message to PubSubReceivers which have subscribed to the specified channel.
+ * @param message the message to broadcast to PubSubReceivers via the channel.
+ * @param channel the channel to which broadcast the message.
+ */
 - (void)publishMessage:(NSDictionary *)message
              toChannel:(NSString *)channel {
     [receivers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -76,6 +90,13 @@
     }];
 }
 
+/**
+ * @discussion Subscribes the specified viewController to messages sent via the specified channel.
+ * @warning if no PubSubReceiver was created for the specified viewController, creates it.
+ * @param viewController the CobaltViewController the PubSubReceiver will have to use to send messages.
+ * @param channel the channel the PubSubReceiver subscribes.
+ * @param callback the callback the PubSubReceiver will have to call to send messages
+ */
 - (void)subscribeViewController:(CobaltViewController *)viewController
                       toChannel:(NSString *)channel
                    withCallback:(NSString *)callback {
@@ -101,6 +122,11 @@
     }
 }
 
+/**
+ * @discussion Unsubscribes the specified viewController from messages sent via the specified channel.
+ * @param viewController the viewController to unsubscribes from the channel.
+ * @param channel the channel from which the messages come from.
+ */
 - (void)unsubscribeViewController:(CobaltViewController *)viewController
                       FromChannel:(NSString *)channel {
     __block PubSubReceiver *receiver;
@@ -119,7 +145,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#pragma mark - PUBSUB RECEIVER DELEGATE
+#pragma mark PUBSUB RECEIVER DELEGATE -
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

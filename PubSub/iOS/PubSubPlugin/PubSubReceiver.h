@@ -100,7 +100,7 @@
               withCallback:(NSString *)callback;
 /**
  * @discussion Unsubscribes from messages sent from the specified channel.
- * @warning if after the unsubscription, the PubSubReceiver is not subscribed to any channel and delegate is set,
+ * @warning if after the unsubscription, the PubSubReceiver is not subscribed to any channel and delegate is set, 
  * its receiverReadyForRemove: method will be called.
  * @param channel the channel from which the messages come from.
  */
@@ -108,7 +108,7 @@
 
 /**
  * @discussion If the PubSubReceiver has subscribed to the specified channel, sends the specified message from this channel to the UIWebView contained in the viewController
- * @warning if viewController is nil at this time, due to deallocation or wrong initialization,
+ * @warning if viewController is nil at this time, due to deallocation or wrong initialization, 
  * and the delegate is set, its receiverReadyForRemove: method will be called.
  * @param message the message received from the channel.
  * @param channel the channel from which the messages come from.
