@@ -10,6 +10,12 @@
 
 @implementation PubSubReceiver
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark INIT METHODS
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 - (id)initWithViewController:(CobaltViewController *)viewController {
     if (self = [super init]) {
         _viewController = viewController;
@@ -29,6 +35,12 @@
     
     return self;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark HELPERS METHODS
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 - (void)subscribeToChannel:(NSString *)channel
               withCallback:(NSString *)callback {
@@ -55,13 +67,13 @@
         NSLog(@"PubSubReceiver receiveMessage:forChannel: - viewController is nil. \
               It may be caused by its deallocation or the PubSubReceiver was not correctly initialized... \
               Please check if the PubSubReceiver has been initialized with initWithViewController: or initWithViewController:andCallback:forChannel: methods.");
-    
+        
         if (_delegate) {
             [_delegate receiverReadyForRemove:self];
             return;
         }
     }
-
+    
     NSAssert(channel, @"Cannot send message to nil channel");
     
     NSString *callback = [callbackForChannel objectForKey:channel];
@@ -71,7 +83,7 @@
     }
     
     [_viewController sendCallback:callback
-                        withData:message];
+                         withData:message];
 }
 
 @end
