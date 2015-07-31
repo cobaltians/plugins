@@ -31,7 +31,9 @@ package io.kristal.pubsubplugin;
 
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
 
+import android.support.annotation.NonNull;
 import android.support.v4.util.SimpleArrayMap;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
@@ -45,6 +47,8 @@ import org.json.JSONObject;
  */
 public class PubSubReceiver {
 
+    private static final String TAG = PubSubReceiver.class.getSimpleName();
+
     /***********************************************************************************************
      * MEMBERS
      **********************************************************************************************/
@@ -56,7 +60,7 @@ public class PubSubReceiver {
     /**
      * The CobaltFragment containing the WebView to which send messages
      */
-    private WeakReference<CobaltFragment> fragment;
+    private WeakReference<CobaltFragment> fragmentReference = new WeakReference<>(null);
     /**
      * The listener to notify when the fragment is nil (deallocated or not correctly initialized)
      * or the PubSubReceiver is not subscribed to any channel any more
@@ -77,7 +81,8 @@ public class PubSubReceiver {
      * @param fragment the CobaltFragment containing the WebView to which send messages.
      */
     public PubSubReceiver(CobaltFragment fragment) {
-
+        fragmentReference = new WeakReference<CobaltFragment>(fragment);
+        callbackForChannel = new SimpleArrayMap<>();
     }
 
     /**
@@ -88,12 +93,23 @@ public class PubSubReceiver {
      * @param channel  the channel from which the messages will come from.
      */
     public PubSubReceiver(CobaltFragment fragment, String callback, String channel) {
-
+        fragmentReference = new WeakReference<CobaltFragment>(fragment);
+        callbackForChannel = new SimpleArrayMap<>(1);
+        callbackForChannel.put(channel, callback);
     }
 
     /***********************************************************************************************
      * Helpers
      **********************************************************************************************/
+
+    /**
+     * Sets the listener to notify when the fragment is nil (deallocated or not correctly initialized)
+     * or the PubSubReceiver is not subscribed to any channel any more
+     * @param listener the listener
+     */
+    public void setListener(PubSubInterface listener) {
+        this.listener = listener;
+    }
 
     /**
      * Subscribes to messages sent from the specified channel.
@@ -102,8 +118,8 @@ public class PubSubReceiver {
      * @param channel  the channel from which the messages will come from.
      * @implNote overrides the callback if the PubSubReceiver has already subscribed to the specified channel
      */
-    public void subscribeToChannel(String channel, String callback) {
-
+    public void subscribeToChannel(@NonNull String channel, String callback) {
+        callbackForChannel.put(channel, callback);
     }
 
     /**
@@ -113,8 +129,13 @@ public class PubSubReceiver {
      * @implNote if after the unsubscription, the PubSubReceiver is not subscribed to any channel and delegate is set,
      * its receiverReadyForRemove: method will be called.
      */
-    public void unsubscribeFromChannel(String channel) {
+    public void unsubscribeFromChannel(@NonNull String channel) {
+        callbackForChannel.remove(channel);
 
+        if (callbackForChannel.isEmpty()
+            && listener != null) {
+            listener.receiverReadyForRemove(this);
+        }
     }
 
     /**
@@ -125,7 +146,26 @@ public class PubSubReceiver {
      * @implNote if fragment is nil at this time, due to deallocation or wrong initialization,
      * and the delegate is set, its receiverReadyForRemove: method will be called.
      */
-    public void receiveMessage(JSONObject message, String channel) {
+    public void receiveMessage(JSONObject message, @NonNull String channel) {
+        CobaltFragment fragment = fragmentReference.get();
+        if (fragment == null) {
+            Log.w(TAG, "receiveMessage - fragment is null. "
+                        + "It may be caused by its deallocation or the PubSubReceiver was not correctly initialized... "
+                        + "Please check if the PubSubReceiver has been initialized with PubSubReceiver(CobaltFragment) or PubSubReceiver(CobaltFragment, String, String) methods.");
 
+            if (listener != null) {
+                listener.receiverReadyForRemove(this);
+            }
+
+            return;
+        }
+
+        String callback = callbackForChannel.get(channel);
+        if (callback == null) {
+            Log.w(TAG, "receiveMessage - " + fragment.getClass().getSimpleName() + "has not subscribed to " + channel + " channel yet or has already unsubscribed.");
+            return;
+        }
+
+        fragment.sendCallback(callback, message);
     }
 }
