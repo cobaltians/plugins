@@ -1,4 +1,4 @@
-package io.kristal.appinfos;
+package io.kristal.pubsubplugin;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
