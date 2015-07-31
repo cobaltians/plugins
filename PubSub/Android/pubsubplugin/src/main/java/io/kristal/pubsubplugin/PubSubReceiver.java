@@ -31,7 +31,9 @@ package io.kristal.pubsubplugin;
 
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
 
-import java.util.Map;
+import android.support.v4.util.SimpleArrayMap;
+
+import java.lang.ref.WeakReference;
 
 import org.json.JSONObject;
 
@@ -50,11 +52,11 @@ public class PubSubReceiver {
     /**
      * The dictionary which keeps track of subscribed channels and their linked callback
      */
-    private Map<String, String> callbackForChannel;
+    private SimpleArrayMap<String, String> callbackForChannel;
     /**
      * The CobaltFragment containing the WebView to which send messages
      */
-    private CobaltFragment fragment;
+    private WeakReference<CobaltFragment> fragment;
     /**
      * The listener to notify when the fragment is nil (deallocated or not correctly initialized)
      * or the PubSubReceiver is not subscribed to any channel any more
