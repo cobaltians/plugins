@@ -33,9 +33,12 @@ import fr.cobaltians.cobalt.fragments.CobaltFragment;
 import fr.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
 import fr.cobaltians.cobalt.plugin.CobaltPluginWebContainer;
 
-import org.json.JSONObject;
+import android.util.Log;
 
 import java.util.ArrayList;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A plugin which allow WebViews contained in CobaltFragments to broadcast messages between them into channels.
@@ -44,6 +47,8 @@ import java.util.ArrayList;
  * @author Sébastien Vitard
  */
 public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubInterface {
+
+	private static final String TAG = PubSubReceiver.class.getSimpleName();
 
 	/**********************************************************************************************
 	 * MEMBERS
@@ -54,7 +59,7 @@ public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubIn
 	/**
 	 * The array which keeps track of PubSubReceivers
 	 */
-	private ArrayList<PubSubReceiver> receivers;
+	private ArrayList<PubSubReceiver> receivers = new ArrayList<>();
 
 	/**********************************************************************************************
 	 * CONSTRUCTORS
@@ -72,7 +77,30 @@ public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubIn
 
 	@Override
 	public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
+		try {
+			String action = message.getString("action");
+			JSONObject data = message.getJSONObject("data");
+			String channel = data.getString("channel");
+			JSONObject innerMessage = data.optJSONObject("message");
+			String callback = data.optString("callback", null);
 
+			switch(action) {
+				case "publish":
+					publishMessage(innerMessage, channel);
+					break;
+				case "subscribe":
+					subscribeFragmentToChannel(webContainer.getFragment(), channel, callback);
+					break;
+				case "unsubscribe":
+					unsubscribeFragmentFromChannel(webContainer.getFragment(), channel);
+					break;
+				default:
+					break;
+			}
+		}
+		catch(JSONException exception) {
+			Log.e(TAG, "onMessage - Some fields may be missing or not of expected type: string action, object data or string data.channel");
+		}
 	}
 
 	/**********************************************************************************************
@@ -84,8 +112,10 @@ public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubIn
 	 * @param message the message to broadcast to PubSubReceivers via the channel.
 	 * @param channel the channel to which broadcast the message.
 	 */
-	private void publishMessage(String message, String channel) {
-
+	private void publishMessage(JSONObject message, String channel) {
+		for (PubSubReceiver receiver : receivers) {
+			receiver.receiveMessage(message, channel);
+		}
 	}
 
 	/**
@@ -96,7 +126,23 @@ public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubIn
 	 * @param callback the callback the PubSubReceiver will have to call to send messages
 	 */
 	private void subscribeFragmentToChannel(CobaltFragment fragment, String channel, String callback) {
+		PubSubReceiver subscribingReceiver = null;
 
+		for (PubSubReceiver receiver : receivers) {
+			if (fragment.equals(receiver.getFragment())) {
+				subscribingReceiver = receiver;
+				break;
+			}
+		}
+
+		if (subscribingReceiver != null) {
+			subscribingReceiver.subscribeToChannel(channel, callback);
+		}
+		else {
+			subscribingReceiver = new PubSubReceiver(fragment, callback, channel);
+			subscribingReceiver.setListener(this);
+			receivers.add(subscribingReceiver);
+		}
 	}
 
 	/**
@@ -105,8 +151,19 @@ public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubIn
 	 * @param channel the channel from which the messages come from.
 	 */
 
-	private void unsubscribeVFragmentFromChannel(CobaltFragment fragment, String channel) {
+	private void unsubscribeFragmentFromChannel(CobaltFragment fragment, String channel) {
+		PubSubReceiver unsubscribingReceiver = null;
 
+		for (PubSubReceiver receiver : receivers) {
+			if (fragment.equals(receiver.getFragment())) {
+				unsubscribingReceiver = receiver;
+				break;
+			}
+		}
+
+		if (unsubscribingReceiver != null) {
+			unsubscribingReceiver.unsubscribeFromChannel(channel);
+		}
 	}
 
 	/**********************************************************************************************
@@ -115,6 +172,6 @@ public final class PubSubPlugin extends CobaltAbstractPlugin implements PubSubIn
 
 	@Override
 	public void receiverReadyForRemove(PubSubReceiver receiver) {
-
+		receivers.remove(receiver);
 	}
 }

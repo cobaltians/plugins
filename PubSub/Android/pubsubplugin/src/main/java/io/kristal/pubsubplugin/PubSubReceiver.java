@@ -77,7 +77,6 @@ public class PubSubReceiver {
 
     /**
      * Creates and return a PubSubReceiver for the specified CobaltFragment registered to no channel.
-     *
      * @param fragment the CobaltFragment containing the WebView to which send messages.
      */
     public PubSubReceiver(CobaltFragment fragment) {
@@ -87,7 +86,6 @@ public class PubSubReceiver {
 
     /**
      * Creates and return a PubSubReceiver for the specified CobaltFragment registered to the specified channel.
-     *
      * @param fragment the CobaltFragment containing the WebView to which send messages.
      * @param callback the callback to call to forward messages from the specified channel.
      * @param channel  the channel from which the messages will come from.
@@ -99,8 +97,16 @@ public class PubSubReceiver {
     }
 
     /***********************************************************************************************
-     * Helpers
+     * Getters / Setters
      **********************************************************************************************/
+
+    /**
+     * Gets the CobaltFragment containing the WebView to which send messages
+     * @return the CobaltFragment containing the WebView to which send messages
+     */
+    public CobaltFragment getFragment() {
+        return fragmentReference.get();
+    }
 
     /**
      * Sets the listener to notify when the fragment is nil (deallocated or not correctly initialized)
@@ -110,6 +116,10 @@ public class PubSubReceiver {
     public void setListener(PubSubInterface listener) {
         this.listener = listener;
     }
+
+    /***********************************************************************************************
+     * Helpers
+     **********************************************************************************************/
 
     /**
      * Subscribes to messages sent from the specified channel.
